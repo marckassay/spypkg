@@ -1,0 +1,16 @@
+{
+  "name": "altpackage",
+  "version": "0.0.1",
+  "description": "Alternative package locator",
+  "main": "lib/index.ts",
+  "repository": "https://github.com/marckassay/altpackage.git",
+  "author": "Marc Kassay <marckassay@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "typescript": "^3.2.1"
+  },
+  "dependencies": {
+    "@types/node": "^10.12.11"
+  }
+}
