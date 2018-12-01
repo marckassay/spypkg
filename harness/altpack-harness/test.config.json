@@ -1,0 +1,18 @@
+{
+  "projectOutPath": "out\\alt-pack\\",
+  "package": [
+    {
+      "name": "ionic",
+      "location": "{yarn global bin}"
+    },
+    {
+      "name": "cordova",
+      "location": "{yarn global bin}"
+    },
+    {
+      "name": "npm",
+      "adaptor": "scripts\\dist\\adaptor\\npm_adaptor.js",
+      "location": "C:\\Program Files\\nodejs"
+    }
+  ]
+}

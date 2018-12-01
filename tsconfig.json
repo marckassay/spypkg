@@ -16,6 +16,7 @@
     ]
   },
   "include": [
-    "./lib/**/*"
+    "./lib/**/*",
+    "./harness/deploy.ts"
   ]
 }

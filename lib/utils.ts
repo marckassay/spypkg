@@ -62,7 +62,7 @@ export async function executeScriptBlock(scriptblock: string, err_message: strin
     });
 }
 
-export async function removeSymbolicDependencies(filePath: string, err_message: string): Promise<void> {
+export async function removeSymlinks(filePath: string, err_message: string): Promise<void> {
   const remove = promisify(fs.unlink);
   // tslint:disable-next-line:no-bitwise
   if (!checkUsersPermissions(filePath, fs.constants.W_OK | fs.constants.R_OK)) {

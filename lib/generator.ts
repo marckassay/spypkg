@@ -1,11 +1,11 @@
-import * as util from './symlink-util';
+import * as util from './utils';
 import { join } from 'path';
 
-interface SymlinkConfig {
+interface AltPackageConfig {
   projectOutPath: string;
-  dependencies: [{
+  packages: [{
     name: string,
-    symlinkPath: string,
+    location: string,
     adaptor?: string
   }];
 }
@@ -47,10 +47,10 @@ function outAdaptor(name: string = genericAdaptorFileName): string {
   return join(outDirPath, name);
 }
 
-const configFilename = 'symlink.config.json';
+const configFilename = 'altpackage.config.json';
 
 /**
- * Reads the `symlink-config.json` by iterating the dependencies section of the file to create
+ * Reads the `symlink-config.json` by iterating the packages section of the file to create
  * symlinks. These symlinks are intended to reside in a location listed in the env's PATH so that
  * the CLI, IDE, node and/or any executable will find it "globally" but since symbolic will call the
  * local package. If called outside of project's directory will command will fail and if called in
@@ -60,23 +60,23 @@ const configFilename = 'symlink.config.json';
  */
 async function generate() {
   /**
-   * JS Object that represents `symlink.config.json` contents.
+   * JS Object that represents `altpackage.config.json` contents.
    */
-  let config: SymlinkConfig;
+  let config: AltPackageConfig;
 
-  await util.doesFileExistAsync(configFilename, 'Unable to load symlink.config.json');
+  await util.doesFileExistAsync(configFilename, 'Unable to load altpackage.config.json');
 
-  const configRaw: string = await util.readFileAsync(configFilename, 'Unable to read symlink.config.json') as string;
+  const configRaw: string = await util.readFileAsync(configFilename, 'Unable to read altpackage.config.json') as string;
 
   try {
     config = JSON.parse(configRaw);
     outDirPath = config.projectOutPath;
   } catch (error) {
-    throw new Error('Unable to parse symlink.config.json into a JSON object.');
+    throw new Error('Unable to parse altpackage.config.json into a JSON object.');
   }
 
-  for (const dependency of config.dependencies) {
-    await newCommandDependency(dependency.name, dependency.symlinkPath, dependency.adaptor);
+  for (const dependency of config.packages) {
+    await newCommandDependency(dependency.name, dependency.location, dependency.adaptor);
   }
 }
 
@@ -116,7 +116,6 @@ async function newCommandDependency(name: string, commandDirectoryPath: string, 
     const scriptsCustomBashDependency: string = join(scriptsDependencyDirPath, customBashDependencyFileName);
     const scriptsCustomCmdDependency: string = join(scriptsDependencyDirPath, customCmdDependencyFileName);
 
-
     // if custom adaptor is defined; then a custom set of files are needed.
     await util.checkAndCreateACopy(scriptsCustomBashDependency, bashDependencyValue, true);
     await util.checkAndCreateACopy(scriptsCustomCmdDependency, cmdDependencyValue);
@@ -137,14 +136,14 @@ async function checkAndRemoveExisitingCommandFiles(path: string) {
   await util.doesFileExistAsync(path)
     .then((value: boolean) => {
       if (value === true) {
-        util.removeSymbolicDependencies(path, 'Unable to remove the file. Do you have permissions to access this file?: ');
+        util.removeSymlinks(path, 'Unable to remove the file. Do you have permissions to access this file?: ');
       }
     });
 
   await util.doesFileExistAsync(path + '.cmd')
     .then((value: boolean) => {
       if (value === true) {
-        util.removeSymbolicDependencies(path + '.cmd', 'Unable to remove the file. Do you have permissions to access this file?: ');
+        util.removeSymlinks(path + '.cmd', 'Unable to remove the file. Do you have permissions to access this file?: ');
       }
     });
 

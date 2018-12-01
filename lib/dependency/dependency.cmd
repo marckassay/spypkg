@@ -1,8 +1,8 @@
 :: This script file is to be used as a value for a symlink on Windows systems. This symlink is intended
 :: to reside in the $ENV:Path so that it can be called in the CLI as a command.
 ::
-:: This script file, along with it's sibling (bash) file for UNIX systems, takes the filename
-:: of the symlink, current directory and parses the symlink.config.json file. With the information
+:: This script file, along with it's sibling (bash) file for UNIX systems will read the filename
+:: of the symlink, current directory and parses the altpackage.config.json file. With the information
 :: gathered, it will call the JS adaptor file with node. This adaptor file must reside in the
 :: 'projectOutPath' directory which is relative to the current directory.
 ::
@@ -14,7 +14,7 @@ SETLOCAL enableDelayedExpansion
 
 SET $CurrentDir=%cd%
 SET $Args=%~n0 %*
-SET $JsonConfig=%$CurrentDir%\symlink.config.json
+SET $JsonConfig=%$CurrentDir%\altpackage.config.json
 
 :: returns absolute path to out directory: E:\marckassay\AIT\out\out-scripts
 FOR /F "USEBACKQ tokens=2 delims=:," %%G IN (`findstr /r /c:".*projectOutPath.*:.*" %$JsonConfig%`) DO (
