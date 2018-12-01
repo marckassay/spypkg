@@ -1,0 +1,13 @@
+{
+  "name": "altpack-harness",
+  "version": "0.0.1",
+  "license": "MIT",
+  "main": "lib/index.ts",
+  "repository": "https://github.com/marckassay/altpackage.git",
+  "description": "Test harness for 'altpackage'",
+  "author": "Marc Kassay <marckassay@gmail.com>",
+  "private": true,
+  "devDependencies": {
+    "altpackage": ".\\node_modules\\altpackage"
+  }
+}

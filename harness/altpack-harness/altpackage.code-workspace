@@ -1,0 +1,13 @@
+{
+  "folders": [
+    {
+      "path": ".\\..\\altpackage"
+    },
+    {
+      "path": ".\\..\\altpack-harness"
+    }
+  ],
+  "settings": {
+    "typescript.tsdk": "node_modules\\typescript\\lib"
+  }
+}
