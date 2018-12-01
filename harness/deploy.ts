@@ -9,8 +9,8 @@ export async function deploy() {
     .catch(err => console.error(err));
 
   try {
-    await fs.ensureSymlink(".\\.", "..\\altpack-harness\\node_modules\\altpack\\")
-    console.log('Deployed symlink for test harness: ' + path.resolve('..\\altpack-harness\\node_modules\\altpack\\'));
+    await fs.ensureSymlink("..\\altpackage\\", "..\\altpack-harness\\node_modules\\altpackage\\")
+    console.log('Deployed symlink for test harness: ' + path.resolve('..\\altpack-harness\\node_modules\\altpackage\\'));
   } catch (err) {
     console.error(err);
   }

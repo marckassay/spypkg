@@ -147,4 +147,4 @@ var exe = function () { return __awaiter(_this, void 0, void 0, function () {
     });
 }); };
 exe();
-//# sourceMappingURL=npm_adaptor.js.map
+//# sourceMappingURL=npm-adaptor.js.map

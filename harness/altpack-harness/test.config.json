@@ -11,8 +11,8 @@
     },
     {
       "name": "npm",
-      "adaptor": ".\\scripts\\dist\\adaptor\\npm_adaptor.js",
-      "location": "C:\\Program Files\\nodejs"
+      "location": "C:\\Program Files\\nodejs",
+      "adaptor": "{default}"
     }
   ]
 }

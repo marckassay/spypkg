@@ -7,7 +7,10 @@
   "description": "Test harness for 'altpackage'",
   "author": "Marc Kassay <marckassay@gmail.com>",
   "private": true,
+  "scripts": {
+    "postinstall": "node .\\node_modules\\altpackage\\dist\\index.js"
+  },
   "devDependencies": {
-    "altpackage": ".\\node_modules\\altpackage"
+    "altpackage": ".\\node_modules\\altpackage\\"
   }
 }

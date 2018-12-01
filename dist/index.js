@@ -35,7 +35,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var util = require("./symlink-util");
+var util = require("./utils");
 var path_1 = require("path");
 /**
  * Relative path from project contains `genericBashDependencyFileName` and `genericCmdDependencyFileName`.
@@ -69,9 +69,9 @@ function outAdaptor(name) {
     if (name === void 0) { name = genericAdaptorFileName; }
     return path_1.join(outDirPath, name);
 }
-var configFilename = 'symlink.config.json';
+var configFilename = 'altpackage.config.json';
 /**
- * Reads the `symlink-config.json` by iterating the dependencies section of the file to create
+ * Reads the `symlink-config.json` by iterating the packages section of the file to create
  * symlinks. These symlinks are intended to reside in a location listed in the env's PATH so that
  * the CLI, IDE, node and/or any executable will find it "globally" but since symbolic will call the
  * local package. If called outside of project's directory will command will fail and if called in
@@ -84,10 +84,10 @@ function generate() {
         var config, configRaw, _i, _a, dependency;
         return __generator(this, function (_b) {
             switch (_b.label) {
-                case 0: return [4 /*yield*/, util.doesFileExistAsync(configFilename, 'Unable to load symlink.config.json')];
+                case 0: return [4 /*yield*/, util.doesFileExistAsync(configFilename, 'Unable to load altpackage.config.json')];
                 case 1:
                     _b.sent();
-                    return [4 /*yield*/, util.readFileAsync(configFilename, 'Unable to read symlink.config.json')];
+                    return [4 /*yield*/, util.readFileAsync(configFilename, 'Unable to read altpackage.config.json')];
                 case 2:
                     configRaw = _b.sent();
                     try {
@@ -95,14 +95,14 @@ function generate() {
                         outDirPath = config.projectOutPath;
                     }
                     catch (error) {
-                        throw new Error('Unable to parse symlink.config.json into a JSON object.');
+                        throw new Error('Unable to parse altpackage.config.json into a JSON object.');
                     }
-                    _i = 0, _a = config.dependencies;
+                    _i = 0, _a = config.packages;
                     _b.label = 3;
                 case 3:
                     if (!(_i < _a.length)) return [3 /*break*/, 6];
                     dependency = _a[_i];
-                    return [4 /*yield*/, newCommandDependency(dependency.name, dependency.symlinkPath, dependency.adaptor)];
+                    return [4 /*yield*/, newCommandDependency(dependency.name, dependency.location, dependency.adaptor)];
                 case 4:
                     _b.sent();
                     _b.label = 5;
@@ -199,7 +199,7 @@ function checkAndRemoveExisitingCommandFiles(path) {
                 case 0: return [4 /*yield*/, util.doesFileExistAsync(path)
                         .then(function (value) {
                         if (value === true) {
-                            util.removeSymbolicDependencies(path, 'Unable to remove the file. Do you have permissions to access this file?: ');
+                            util.removeSymlinks(path, 'Unable to remove the file. Do you have permissions to access this file?: ');
                         }
                     })];
                 case 1:
@@ -207,7 +207,7 @@ function checkAndRemoveExisitingCommandFiles(path) {
                     return [4 /*yield*/, util.doesFileExistAsync(path + '.cmd')
                             .then(function (value) {
                             if (value === true) {
-                                util.removeSymbolicDependencies(path + '.cmd', 'Unable to remove the file. Do you have permissions to access this file?: ');
+                                util.removeSymlinks(path + '.cmd', 'Unable to remove the file. Do you have permissions to access this file?: ');
                             }
                         })];
                 case 2:
@@ -218,4 +218,4 @@ function checkAndRemoveExisitingCommandFiles(path) {
     });
 }
 generate();
-//# sourceMappingURL=symlink-generator.js.map
+//# sourceMappingURL=index.js.map

@@ -51,10 +51,10 @@ function deploy() {
                     _a.label = 2;
                 case 2:
                     _a.trys.push([2, 4, , 5]);
-                    return [4 /*yield*/, fs.ensureSymlink(".\\.", "..\\altpack-harness\\node_modules\\altpack\\")];
+                    return [4 /*yield*/, fs.ensureSymlink("..\\altpackage\\", "..\\altpack-harness\\node_modules\\altpackage\\")];
                 case 3:
                     _a.sent();
-                    console.log('Deployed symlink for test harness: ' + path.resolve('..\\altpack-harness\\node_modules\\altpack\\'));
+                    console.log('Deployed symlink for test harness: ' + path.resolve('..\\altpack-harness\\node_modules\\altpackage\\'));
                     return [3 /*break*/, 5];
                 case 4:
                     err_1 = _a.sent();

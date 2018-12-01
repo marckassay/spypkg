@@ -1,7 +1,6 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
-    "outDir": "./dist/",
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,
     "declaration": false,
@@ -14,11 +13,5 @@
       "es2017",
       "dom"
     ]
-  },
-  "include": [
-    "lib/utils.ts",
-    "lib/index.ts",
-    "lib/adaptor/adaptor.ts",
-    "lib/adaptor/built-in/npm-adaptor.ts"
-  ]
+  }
 }
