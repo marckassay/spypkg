@@ -9,7 +9,7 @@
 log.txt
 *.sublime-project
 *.sublime-workspace
-.vscode/
+# .vscode/
 npm-debug.log*
 
 .idea/
@@ -35,4 +35,4 @@ Thumbs.db
 UserInterfaceState.xcuserstate
 
 # Omit in favor of yarn.lock
-package-lock.json
+# package-lock.json

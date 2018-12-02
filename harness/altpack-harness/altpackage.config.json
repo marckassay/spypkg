@@ -1,0 +1,18 @@
+{
+  "projectOutPath": ".\\out\\",
+  "package": [
+    {
+      "name": "ionic",
+      "location": "{yarn global bin}"
+    },
+    {
+      "name": "cordova",
+      "location": "{yarn global bin}"
+    },
+    {
+      "name": "npm",
+      "location": "C:\\Program Files\\nodejs",
+      "adaptor": "{default}"
+    }
+  ]
+}

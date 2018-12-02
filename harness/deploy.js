@@ -35,32 +35,58 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var child = require("child_process");
 var path = require("path");
+var util_1 = require("util");
 var fs = require('fs-extra');
-var srcHarnessDirectory = ".\\harness\\altpack-harness\\";
+var exec = util_1.promisify(child.exec);
 function deploy() {
     return __awaiter(this, void 0, void 0, function () {
         var err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, fs.copy(srcHarnessDirectory, '..\\altpack-harness\\')
-                        .then(function () { return console.log('Deployed test harness: ' + path.resolve('..\\altpack-harness\\')); })
-                        .catch(function (err) { return console.error(err); })];
+                case 0:
+                    _a.trys.push([0, 3, , 4]);
+                    /*    await fs.copy(srcHarnessDirectory, '..\\altpack-harness\\')
+                      .then(() => console.log('Deployed test harness: ' + path.resolve('..\\altpack-harness\\')))
+                      .catch(err => console.error(err)); */
+                    return [4 /*yield*/, fs.ensureSymlink('.\\harness\\altpack-harness\\', '..\\altpack-harness\\')];
                 case 1:
+                    /*    await fs.copy(srcHarnessDirectory, '..\\altpack-harness\\')
+                      .then(() => console.log('Deployed test harness: ' + path.resolve('..\\altpack-harness\\')))
+                      .catch(err => console.error(err)); */
                     _a.sent();
-                    _a.label = 2;
-                case 2:
-                    _a.trys.push([2, 4, , 5]);
-                    return [4 /*yield*/, fs.ensureSymlink("..\\altpackage\\", "..\\altpack-harness\\node_modules\\altpackage\\")];
+                    console.log('Deployed symlink for test harness: ' + path.resolve('..\\altpack-harness\\'));
+                    // promisify();
+                    // const ext = process.platform === 'win32' ? '.cmd' : '';
+                    process.chdir(path.resolve('..\\altpack-harness\\'));
+                    console.log("Changed directory to: " + process.cwd());
+                    // ['/c', 'yarn', 'run']
+                    /*     const result = child.exec('cmd /c yarn run install-package');
+                        if (result.error || result.status !== 0) {
+                          process.exit(1);
+                        } else {
+                          process.exit(0);
+                        } */
+                    console.log('Executing: cmd /c yarn run install-package');
+                    return [4 /*yield*/, exec('cmd /c yarn run install-package')
+                            .then(function (onfulfilled) {
+                            if (onfulfilled.stdout) {
+                                console.log(onfulfilled.stdout);
+                            }
+                            if (onfulfilled.stderr) {
+                                console.log(onfulfilled.stderr);
+                            }
+                        })
+                            .catch(function (reason) {
+                            console.log(reason);
+                        })];
+                case 2: return [2 /*return*/, _a.sent()];
                 case 3:
-                    _a.sent();
-                    console.log('Deployed symlink for test harness: ' + path.resolve('..\\altpack-harness\\node_modules\\altpackage\\'));
-                    return [3 /*break*/, 5];
-                case 4:
                     err_1 = _a.sent();
                     console.error(err_1);
-                    return [3 /*break*/, 5];
-                case 5: return [2 /*return*/];
+                    return [3 /*break*/, 4];
+                case 4: return [2 /*return*/];
             }
         });
     });

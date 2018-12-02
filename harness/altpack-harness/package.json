@@ -8,9 +8,9 @@
   "author": "Marc Kassay <marckassay@gmail.com>",
   "private": true,
   "scripts": {
-    "postinstall": "node .\\node_modules\\altpackage\\dist\\index.js"
+    "install-package": "yarn add file:./../altpackage --dev"
   },
   "devDependencies": {
-    "altpackage": ".\\node_modules\\altpackage\\"
+    "altpackage": "file:./../altpackage"
   }
 }

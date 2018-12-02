@@ -1,0 +1,47 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Watch lib for TypeScript",
+      "type": "typescript",
+      "tsconfig": "altpackage\\tsconfig.json",
+      "option": "watch",
+      "problemMatcher": [
+        "$tsc-watch"
+      ]
+    },
+    {
+      "label": "Build lib for TypeScript",
+      "type": "typescript",
+      "tsconfig": "altpackage\\tsconfig.json",
+      "problemMatcher": [
+        "$tsc"
+      ]
+    },
+    {
+      "label": "Copy bash and batch files",
+      "type": "shell",
+      "command": "xcopy 'lib\\dependency\\*.*' 'dist\\'",
+      "problemMatcher": []
+    },
+    {
+      "label": "Watch harness for TypeScript",
+      "type": "typescript",
+      "tsconfig": "altpackage\\harness\\tsconfig.json",
+      "option": "watch",
+      "problemMatcher": [
+        "$tsc-watch"
+      ]
+    },
+    {
+      "label": "Build harness for TypeScript",
+      "type": "typescript",
+      "tsconfig": "altpackage\\harness\\tsconfig.json",
+      "problemMatcher": [
+        "$tsc"
+      ]
+    }
+  ]
+}

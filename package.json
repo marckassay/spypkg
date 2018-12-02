@@ -1,14 +1,14 @@
 {
   "name": "altpackage",
   "version": "0.0.1",
-  "description": "Alternative package locator",
+  "description": "Alternative package solution",
   "main": "lib/index.ts",
   "repository": "https://github.com/marckassay/altpackage.git",
   "author": "Marc Kassay <marckassay@gmail.com>",
   "license": "MIT",
   "private": true,
   "scripts": {
-    "postinstall": "node dist/harness/deploy.js"
+    "install-harness": "node harness/deploy.js"
   },
   "devDependencies": {
     "@types/fs-extra": "^5.0.4",
