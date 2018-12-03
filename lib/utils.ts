@@ -8,21 +8,19 @@ const readFileAsync2 = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
 const renameFileAsync = promisify(fs.rename);
 
-export async function readFileAsync(filePath, err_message) {
-  const readFile = promisify(fs.readFile);
-  return await readFile(filePath, 'utf8')
-    .then((value: string) => {
-      if (value.length !== 0) {
-        return Promise.resolve(value);
-      } else {
-        console.error(err_message);
-        process.exit(1002);
-      }
-    })
-    .catch(() => {
-      console.error(err_message);
-      process.exit(1002);
-    });
+export async function readFileAsync(filePath, err_message): Promise<string | never> {
+  try {
+    const readFile = promisify(fs.readFile);
+    return await readFile(filePath, 'utf8')
+      .then((value: string) => {
+        return value;
+      })
+      .catch(() => {
+        return Promise.reject(err_message);
+      });
+  } catch {
+    return Promise.reject(err_message);
+  }
 }
 
 export async function doesFileExistAsync(filePath, err_message?: string): Promise<boolean> {

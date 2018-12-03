@@ -1,6 +1,6 @@
 {
   "projectOutPath": ".\\out\\",
-  "package": [
+  "packages": [
     {
       "name": "ionic",
       "location": "{yarn global bin}"
@@ -12,7 +12,7 @@
     {
       "name": "npm",
       "location": "C:\\Program Files\\nodejs",
-      "adaptor": "{default}"
+      "adaptor": "{built-in}"
     }
   ]
 }

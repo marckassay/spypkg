@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -40,11 +41,11 @@ var path_1 = require("path");
 /**
  * Relative path from project contains `genericBashDependencyFileName` and `genericCmdDependencyFileName`.
  */
-var libDependencyDirPath = './lib/dependency';
+// const libDependencyDirPath = './lib/dependency';
 /**
  * Relative path from project that contains `genericAdaptorFileName`.
  */
-var libAdaptorDirPath = './lib/adaptor';
+// const libAdaptorDirPath = './lib/adaptor';
 var genericBashDependencyFileName = 'dependency';
 var genericCmdDependencyFileName = 'dependency.cmd';
 var customBashDependencyFileName = 'x-dependency';
@@ -54,22 +55,23 @@ var genericAdaptorFileName = 'adaptor.js';
  * The location to the `out` folder. This is intended to reside at the project root directory.
  */
 var outDirPath;
-var libGenericBashDependency = path_1.join(libDependencyDirPath, genericBashDependencyFileName);
+var libGenericBashDependency = path_1.join(__dirname, genericBashDependencyFileName);
 function outBashDependency(name) {
     if (name === void 0) { name = genericBashDependencyFileName; }
     return path_1.join(outDirPath, name);
 }
-var libGenericCmdDependency = path_1.join(libDependencyDirPath, genericCmdDependencyFileName);
+var libGenericCmdDependency = path_1.join(__dirname, genericCmdDependencyFileName);
 function outCmdDependency(name) {
     if (name === void 0) { name = genericCmdDependencyFileName; }
     return path_1.join(outDirPath, name);
 }
-var libGenericAdaptor = path_1.join(libAdaptorDirPath, genericAdaptorFileName);
+var libGenericAdaptor = path_1.join(__dirname, 'adaptor', genericAdaptorFileName);
 function outAdaptor(name) {
     if (name === void 0) { name = genericAdaptorFileName; }
     return path_1.join(outDirPath, name);
 }
 var configFilename = 'altpackage.config.json';
+var configFilePath = path_1.join(process.cwd(), configFilename);
 /**
  * Reads the `altpackage.config.json` by iterating the packages section of the file to create
  * symlinks. These symlinks are intended to reside in a location listed in the env's PATH so that
@@ -84,14 +86,16 @@ function generate() {
         var config, configRaw, _i, _a, dependency;
         return __generator(this, function (_b) {
             switch (_b.label) {
-                case 0: return [4 /*yield*/, util.doesFileExistAsync(configFilename, 'Unable to load altpackage.config.json')];
+                case 0: return [4 /*yield*/, util.doesFileExistAsync(configFilePath, 'Unable to load altpackage.config.json')];
                 case 1:
                     _b.sent();
-                    return [4 /*yield*/, util.readFileAsync(configFilename, 'Unable to read altpackage.config.json')];
+                    return [4 /*yield*/, util.readFileAsync(configFilePath, 'Unable to read altpackage.config.json')];
                 case 2:
                     configRaw = _b.sent();
+                    console.log(configRaw);
                     try {
                         config = JSON.parse(configRaw);
+                        // TODO: apply mapping from string to AltPackageConfig so that when it fails it is unkown
                         outDirPath = config.projectOutPath;
                     }
                     catch (error) {
@@ -152,12 +156,15 @@ function newCommandDependency(name, commandDirectoryPath, adaptor) {
                     cmdDependencyValue = outCmdDependency();
                     return [3 /*break*/, 13];
                 case 7:
+                    if (adaptor === "{built-in}") {
+                        adaptor = path_1.join(__dirname, 'adaptor', 'built-in', name + '-adaptor.js');
+                    }
                     bashDependencyValue = outBashDependency(name + '-dependency');
                     cmdDependencyValue = outCmdDependency(name + '-dependency.cmd');
                     adaptorValue = outAdaptor(util.getFullname(adaptor));
                     adaptorName = util.getFullname(adaptor);
-                    libCustomBashDependency = path_1.join(libDependencyDirPath, customBashDependencyFileName);
-                    libCustomCmdDependency = path_1.join(libDependencyDirPath, customCmdDependencyFileName);
+                    libCustomBashDependency = path_1.join(__dirname, customBashDependencyFileName);
+                    libCustomCmdDependency = path_1.join(__dirname, customCmdDependencyFileName);
                     // if custom adaptor is defined; then a custom set of files are needed.
                     return [4 /*yield*/, util.checkAndCreateACopy(libCustomBashDependency, bashDependencyValue, true)];
                 case 8:

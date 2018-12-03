@@ -45,26 +45,24 @@ var writeFileAsync = util_1.promisify(fs.writeFile);
 var renameFileAsync = util_1.promisify(fs.rename);
 function readFileAsync(filePath, err_message) {
     return __awaiter(this, void 0, void 0, function () {
-        var readFile;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        var readFile, _a;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
+                    _b.trys.push([0, 2, , 3]);
                     readFile = util_1.promisify(fs.readFile);
                     return [4 /*yield*/, readFile(filePath, 'utf8')
                             .then(function (value) {
-                            if (value.length !== 0) {
-                                return Promise.resolve(value);
-                            }
-                            else {
-                                console.error(err_message);
-                                process.exit(1002);
-                            }
+                            return value;
                         })
                             .catch(function () {
-                            console.error(err_message);
-                            process.exit(1002);
+                            return Promise.reject(err_message);
                         })];
-                case 1: return [2 /*return*/, _a.sent()];
+                case 1: return [2 /*return*/, _b.sent()];
+                case 2:
+                    _a = _b.sent();
+                    return [2 /*return*/, Promise.reject(err_message)];
+                case 3: return [2 /*return*/];
             }
         });
     });

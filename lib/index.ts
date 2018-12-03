@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import * as util from './utils';
 import { join } from 'path';
 
@@ -13,12 +15,12 @@ interface AltPackageConfig {
 /**
  * Relative path from project contains `genericBashDependencyFileName` and `genericCmdDependencyFileName`.
  */
-const libDependencyDirPath = './lib/dependency';
+// const libDependencyDirPath = './lib/dependency';
 
 /**
  * Relative path from project that contains `genericAdaptorFileName`.
  */
-const libAdaptorDirPath = './lib/adaptor';
+// const libAdaptorDirPath = './lib/adaptor';
 
 
 const genericBashDependencyFileName = 'dependency';
@@ -32,22 +34,24 @@ const genericAdaptorFileName = 'adaptor.js';
  */
 let outDirPath: string;
 
-const libGenericBashDependency: string = join(libDependencyDirPath, genericBashDependencyFileName);
+const libGenericBashDependency: string = join(__dirname, genericBashDependencyFileName);
 function outBashDependency(name: string = genericBashDependencyFileName): string {
   return join(outDirPath, name);
 }
 
-const libGenericCmdDependency: string = join(libDependencyDirPath, genericCmdDependencyFileName);
+const libGenericCmdDependency: string = join(__dirname, genericCmdDependencyFileName);
 function outCmdDependency(name: string = genericCmdDependencyFileName): string {
   return join(outDirPath, name);
 }
 
-const libGenericAdaptor: string = join(libAdaptorDirPath, genericAdaptorFileName);
+const libGenericAdaptor: string = join(__dirname, 'adaptor', genericAdaptorFileName);
 function outAdaptor(name: string = genericAdaptorFileName): string {
   return join(outDirPath, name);
 }
 
 const configFilename = 'altpackage.config.json';
+const configFilePath: string = join(process.cwd(), configFilename);
+
 
 /**
  * Reads the `altpackage.config.json` by iterating the packages section of the file to create
@@ -64,12 +68,13 @@ async function generate() {
    */
   let config: AltPackageConfig;
 
-  await util.doesFileExistAsync(configFilename, 'Unable to load altpackage.config.json');
+  await util.doesFileExistAsync(configFilePath, 'Unable to load altpackage.config.json');
 
-  const configRaw: string = await util.readFileAsync(configFilename, 'Unable to read altpackage.config.json') as string;
-
+  const configRaw: string = await util.readFileAsync(configFilePath, 'Unable to read altpackage.config.json');
+  console.log(configRaw);
   try {
     config = JSON.parse(configRaw);
+    // TODO: apply mapping from string to AltPackageConfig so that when it fails it is unkown
     outDirPath = config.projectOutPath;
   } catch (error) {
     throw new Error('Unable to parse altpackage.config.json into a JSON object.');
@@ -109,13 +114,18 @@ async function newCommandDependency(name: string, commandDirectoryPath: string, 
     bashDependencyValue = outBashDependency();
     cmdDependencyValue = outCmdDependency();
   } else {
+
+    if (adaptor === "{built-in}") {
+      adaptor = join(__dirname, 'adaptor', 'built-in', name + '-adaptor.js');
+    }
+
     bashDependencyValue = outBashDependency(name + '-dependency');
     cmdDependencyValue = outCmdDependency(name + '-dependency.cmd');
     adaptorValue = outAdaptor(util.getFullname(adaptor));
     const adaptorName = util.getFullname(adaptor);
 
-    const libCustomBashDependency: string = join(libDependencyDirPath, customBashDependencyFileName);
-    const libCustomCmdDependency: string = join(libDependencyDirPath, customCmdDependencyFileName);
+    const libCustomBashDependency: string = join(__dirname, customBashDependencyFileName);
+    const libCustomCmdDependency: string = join(__dirname, customCmdDependencyFileName);
 
     // if custom adaptor is defined; then a custom set of files are needed.
     await util.checkAndCreateACopy(libCustomBashDependency, bashDependencyValue, true);
