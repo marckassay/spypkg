@@ -49,12 +49,13 @@ function outAdaptor(name: string = genericAdaptorFileName): string {
   return join(outDirPath, name);
 }
 
-const configFilename = 'altpackage.config.json';
+const configFilename = 'package.json';
+const rootProperty = 'altpackage';
 const configFilePath: string = join(process.cwd(), configFilename);
 
 
 /**
- * Reads the `altpackage.config.json` by iterating the packages section of the file to create
+ * Reads the `package.json` by iterating the packages section of the file to create
  * symlinks. These symlinks are intended to reside in a location listed in the env's PATH so that
  * the CLI, IDE, node and/or any executable will find it "globally" but since symbolic will call the
  * local package. If called outside of project's directory will command will fail and if called in
@@ -64,20 +65,19 @@ const configFilePath: string = join(process.cwd(), configFilename);
  */
 async function generate() {
   /**
-   * JS Object that represents `altpackage.config.json` contents.
+   * JS Object that represents `package.json` contents.
    */
   let config: AltPackageConfig;
 
-  await util.doesFileExistAsync(configFilePath, 'Unable to load altpackage.config.json');
+  await util.doesFileExistAsync(configFilePath, 'Unable to load ' + configFilename);
 
-  const configRaw: string = await util.readFileAsync(configFilePath, 'Unable to read altpackage.config.json');
-  console.log(configRaw);
+  const configRaw: string = await util.readFileAsync(configFilePath, 'Unable to read ' + configFilename);
   try {
-    config = JSON.parse(configRaw);
+    config = JSON.parse(configRaw)[rootProperty];
     // TODO: apply mapping from string to AltPackageConfig so that when it fails it is unkown
     outDirPath = config.projectOutPath;
   } catch (error) {
-    throw new Error('Unable to parse altpackage.config.json into a JSON object.');
+    throw new Error(`Unable to parse ${rootProperty} property ${configFilename} into a JSON object.`);
   }
 
   for (const dependency of config.packages) {
@@ -86,7 +86,7 @@ async function generate() {
 }
 
 /**
-* Creates a dependency from the data parsed in package element of altpackage.config.json.
+* Creates a dependency from the data parsed in package element of package.json.
 *
 * @param {string} name the filename of the bash or batch file.
 * @param {string} commandDirectoryPath the directory of where the file will reside. this is the value
@@ -141,6 +141,8 @@ async function newCommandDependency(name: string, commandDirectoryPath: string, 
 
   await util.createSymlink(bashDependencyValue, symbolicFilePath);
   await util.createSymlink(cmdDependencyValue, symbolicFilePath + '.cmd');
+
+
 }
 
 async function checkAndRemoveExisitingCommandFiles(path: string) {

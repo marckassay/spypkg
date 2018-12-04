@@ -8,7 +8,28 @@
   "author": "Marc Kassay <marckassay@gmail.com>",
   "private": true,
   "scripts": {
-    "install-altpackage": "yarn link altpackage --dev",
-    "add-altpackages": "node ./node_modules/altpackage/dist/index.js"
+    "add-altpackages": "node ./node_modules/altpackage/dist/index.js",
+    "remove-altpackages": "node ./node_modules/altpackage/dist/index.js -remove"
+  },
+  "devDependencies": {
+    "sots": "^3.0.1"
+  },
+  "altpackage": {
+    "projectOutPath": ".\\out\\",
+    "packages": [
+      {
+        "name": "ionic",
+        "location": "{yarn global bin}"
+      },
+      {
+        "name": "cordova",
+        "location": "{yarn global bin}"
+      },
+      {
+        "name": "npm",
+        "location": "C:\\Program Files\\nodejs",
+        "adaptor": "{built-in}"
+      }
+    ]
   }
 }

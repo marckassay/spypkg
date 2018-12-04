@@ -79,72 +79,95 @@ for (var j = 2; j < process.argv.length; j++) {
 }
 argument = argument.trimLeft();
 var parsedArg = regex.exec(argument)['groups'];
-var transformedExe;
-var transformedCommand;
-// tslint:disable-next-line:no-inferrable-types
-var transformedPkgDetails = '';
-var transformedOptions;
-var transformedOptionsString;
-if (parsedArg.pkgdetails) {
-    transformedPkgDetails = parsedArg.pkgdetails;
-}
-if (parsedArg.options) {
-    transformedOptions = isoMorphCollection(parsedArg.options.trim().split(' '), equivalenceTable);
-}
-switch (parsedArg.command) {
-    case 'install':
-        transformedCommand = 'add';
-        if (transformedOptions && transformedOptions.some(function (value) { return value === '**prod'; })) {
-            transformedOptions = transformedOptions.filter(function (value) { return value !== '**prod'; });
+var preexe = function (npmExpression, yarnExpression) { return __awaiter(_this, void 0, void 0, function () {
+    var transformedExe, fullYarnExpression;
+    return __generator(this, function (_a) {
+        if (process.platform === 'win32') {
+            transformedExe = 'cmd';
+            if (!parsedArg.run) {
+                yarnExpression = ['/c', 'yarn'].concat(yarnExpression);
+            }
+            else {
+                yarnExpression = ['/c', 'yarn', 'run'].concat(yarnExpression);
+            }
         }
-        else if (transformedOptions && transformedOptions.some(function (value) { return value === '**global'; })) {
-            transformedCommand = 'global add';
+        else {
+            transformedExe = 'yarn';
+            if (parsedArg.run) {
+                yarnExpression = ['run'].concat(yarnExpression);
+            }
         }
-        else if (!transformedPkgDetails) {
-            transformedCommand = 'install';
-        }
-        break;
-    default:
-        transformedCommand = parsedArg.command;
-}
-transformedOptionsString = (transformedOptions) ? transformedOptions.join(' ') : '';
-var transformedExpression = [transformedCommand, transformedPkgDetails, transformedOptionsString].filter(function (value) { return value.length > 0; });
-if (process.platform === 'win32') {
-    transformedExe = 'cmd';
-    if (!parsedArg.run) {
-        transformedExpression = ['/c', 'yarn'].concat(transformedExpression);
-    }
-    else {
-        transformedExpression = ['/c', 'yarn', 'run'].concat(transformedExpression);
-    }
-}
-else {
-    transformedExe = 'yarn';
-    if (parsedArg.run) {
-        transformedExpression = ['run'].concat(transformedExpression);
-    }
-}
-console.log('The npm expression below has been transformed into the followed yarn expression:');
-console.log(argument);
-console.log(transformedExe + ' ' + transformedExpression.join(' '));
-var exe = function () { return __awaiter(_this, void 0, void 0, function () {
+        fullYarnExpression = transformedExe + ' ' + yarnExpression.join(' ');
+        exe(npmExpression, fullYarnExpression);
+        return [2 /*return*/];
+    });
+}); };
+var exe = function (npmExpression, yarnExpression) { return __awaiter(_this, void 0, void 0, function () {
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, exec(transformedExe + ' ' + transformedExpression.join(' '))
-                    .then(function (onfulfilled) {
-                    if (onfulfilled.stdout) {
-                        console.log(onfulfilled.stdout);
-                    }
-                    if (onfulfilled.stderr) {
-                        console.log(onfulfilled.stderr);
-                    }
-                })
-                    .catch(function (reason) {
-                    console.log(reason);
-                })];
+            case 0:
+                console.log('The npm expression below has been transformed into the followed yarn expression:');
+                console.log(npmExpression);
+                console.log(yarnExpression);
+                return [4 /*yield*/, exec(yarnExpression)
+                        .then(function (onfulfilled) {
+                        if (onfulfilled.stdout) {
+                            console.log(onfulfilled.stdout);
+                        }
+                        if (onfulfilled.stderr) {
+                            console.log(onfulfilled.stderr);
+                        }
+                    })
+                        .catch(function (reason) {
+                        console.log(reason);
+                    })];
             case 1: return [2 /*return*/, _a.sent()];
         }
     });
 }); };
-exe();
+// TODO: unsure how to handle short expressions like this:
+if (argument === 'npm -v') {
+    exe(argument, 'yarn -v');
+}
+else {
+    var transformedCommand = void 0;
+    // tslint:disable-next-line:no-inferrable-types
+    var transformedPkgDetails = '';
+    var transformedOptions = void 0;
+    var transformedOptionsString = void 0;
+    if (parsedArg.pkgdetails) {
+        transformedPkgDetails = parsedArg.pkgdetails;
+    }
+    if (parsedArg.options) {
+        transformedOptions = isoMorphCollection(parsedArg.options.trim().split(' '), equivalenceTable);
+    }
+    switch (parsedArg.command) {
+        case 'uninstall':
+            transformedCommand = 'remove';
+            if (transformedOptions && transformedOptions.some(function (value) { return value === '**prod'; })) {
+                transformedOptions = transformedOptions.filter(function (value) { return value !== '**prod'; });
+            }
+            else if (transformedOptions && transformedOptions.some(function (value) { return value === '**global'; })) {
+                transformedCommand = 'global remove';
+            }
+            break;
+        case 'install':
+            transformedCommand = 'add';
+            if (transformedOptions && transformedOptions.some(function (value) { return value === '**prod'; })) {
+                transformedOptions = transformedOptions.filter(function (value) { return value !== '**prod'; });
+            }
+            else if (transformedOptions && transformedOptions.some(function (value) { return value === '**global'; })) {
+                transformedCommand = 'global add';
+            }
+            else if (!transformedPkgDetails) {
+                transformedCommand = 'install';
+            }
+            break;
+        default:
+            transformedCommand = parsedArg.command;
+    }
+    transformedOptionsString = (transformedOptions) ? transformedOptions.join(' ') : '';
+    var transformedExpression = [transformedCommand, transformedPkgDetails, transformedOptionsString].filter(function (value) { return value.length > 0; });
+    preexe(argument, transformedExpression);
+}
 //# sourceMappingURL=npm-adaptor.js.map

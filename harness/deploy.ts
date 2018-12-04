@@ -14,7 +14,8 @@ export async function deploy() {
     await fs.ensureSymlink('.\\harness\\altpack-harness\\', '..\\altpack-harness\\')
     console.log('Deployed symlink for test harness: ' + path.resolve('..\\altpack-harness\\'));
 
-    let command: string = shellExe + npmExe + ' link';
+    // using user's node package manager of choice, link this ('altpackage') module now...
+    let command: string = (shellExe + ' ' + npmExe + ' link').trimLeft();
     await exec(command)
       .then((onfulfilled) => {
         if (onfulfilled.stdout) {
@@ -31,8 +32,8 @@ export async function deploy() {
     process.chdir(path.resolve('..\\altpack-harness\\'));
     console.log(`Changed directory to: ${process.cwd()}`);
 
-
-    command = shellExe + npmExe + ' run install-altpackage';
+    // ...now execute the link command again specifiying 'altpackage'...
+    command = (shellExe + ' ' + npmExe + ' link altpackage --dev').trimLeft();
     console.log('Executing: ' + command);
     return await exec(command)
       .then((onfulfilled) => {

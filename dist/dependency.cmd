@@ -34,7 +34,7 @@ IF EXIST %ERRORLEVEL% == 1 (
 SET $AdaptorPath=adaptor.js
 )
 
-ECHO [%~n0.cmd] Executing: node %$CurrentDir%\%$Outpath%\%$AdaptorPath% %$Args%
+:: ECHO [%~n0.cmd] Executing: node %$CurrentDir%\%$Outpath%\%$AdaptorPath% %$Args%
 node %$CurrentDir%\%$Outpath%\%$AdaptorPath% %$Args%
 
 :FindAdaptorLine

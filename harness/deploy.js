@@ -53,7 +53,7 @@ function deploy() {
                 case 1:
                     _a.sent();
                     console.log('Deployed symlink for test harness: ' + path.resolve('..\\altpack-harness\\'));
-                    command = shellExe + npmExe + ' link';
+                    command = (shellExe + ' ' + npmExe + ' link').trimLeft();
                     return [4 /*yield*/, exec(command)
                             .then(function (onfulfilled) {
                             if (onfulfilled.stdout) {
@@ -70,7 +70,8 @@ function deploy() {
                     _a.sent();
                     process.chdir(path.resolve('..\\altpack-harness\\'));
                     console.log("Changed directory to: " + process.cwd());
-                    command = shellExe + npmExe + ' run install-altpackage';
+                    // ...now execute the link command again specifiying 'altpackage'...
+                    command = (shellExe + ' ' + npmExe + ' link altpackage --dev').trimLeft();
                     console.log('Executing: ' + command);
                     return [4 /*yield*/, exec(command)
                             .then(function (onfulfilled) {

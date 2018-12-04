@@ -57,60 +57,32 @@ for (let j = 2; j < process.argv.length; j++) {
 argument = argument.trimLeft();
 const parsedArg: RegExShape = regex.exec(argument)['groups'];
 
-let transformedExe: string;
-let transformedCommand: string;
-// tslint:disable-next-line:no-inferrable-types
-let transformedPkgDetails: string = '';
-let transformedOptions: Array<string> | undefined;
-let transformedOptionsString: string;
+const preexe = async (npmExpression: string, yarnExpression: string[]) => {
+  let transformedExe: string;
 
-if (parsedArg.pkgdetails) {
-  transformedPkgDetails = parsedArg.pkgdetails;
-}
-
-if (parsedArg.options) {
-  transformedOptions = isoMorphCollection(parsedArg.options.trim().split(' '), equivalenceTable);
-}
-
-switch (parsedArg.command) {
-  case 'install':
-    transformedCommand = 'add';
-
-    if (transformedOptions && transformedOptions.some((value) => value === '**prod')) {
-      transformedOptions = transformedOptions.filter((value) => value !== '**prod');
-    } else if (transformedOptions && transformedOptions.some((value) => value === '**global')) {
-      transformedCommand = 'global add';
-    } else if (!transformedPkgDetails) {
-      transformedCommand = 'install';
+  if (process.platform === 'win32') {
+    transformedExe = 'cmd';
+    if (!parsedArg.run) {
+      yarnExpression = ['/c', 'yarn'].concat(yarnExpression);
+    } else {
+      yarnExpression = ['/c', 'yarn', 'run'].concat(yarnExpression);
     }
-    break;
-  default:
-    transformedCommand = parsedArg.command;
-}
-transformedOptionsString = (transformedOptions) ? transformedOptions.join(' ') : '';
-
-let transformedExpression = [transformedCommand, transformedPkgDetails, transformedOptionsString].filter((value) => value.length > 0);
-
-if (process.platform === 'win32') {
-  transformedExe = 'cmd';
-  if (!parsedArg.run) {
-    transformedExpression = ['/c', 'yarn'].concat(transformedExpression);
   } else {
-    transformedExpression = ['/c', 'yarn', 'run'].concat(transformedExpression);
+    transformedExe = 'yarn';
+    if (parsedArg.run) {
+      yarnExpression = ['run'].concat(yarnExpression);
+    }
   }
-} else {
-  transformedExe = 'yarn';
-  if (parsedArg.run) {
-    transformedExpression = ['run'].concat(transformedExpression);
-  }
-}
 
-console.log('The npm expression below has been transformed into the followed yarn expression:');
-console.log(argument);
-console.log(transformedExe + ' ' + transformedExpression.join(' '));
+  const fullYarnExpression = transformedExe + ' ' + yarnExpression.join(' ');
+  exe(npmExpression, fullYarnExpression);
+};
 
-const exe = async () => {
-  return await exec(transformedExe + ' ' + transformedExpression.join(' '))
+const exe = async (npmExpression, yarnExpression) => {
+  console.log('The npm expression below has been transformed into the followed yarn expression:');
+  console.log(npmExpression);
+  console.log(yarnExpression);
+  return await exec(yarnExpression)
     .then((onfulfilled) => {
       if (onfulfilled.stdout) {
         console.log(onfulfilled.stdout);
@@ -122,5 +94,53 @@ const exe = async () => {
     .catch((reason) => {
       console.log(reason);
     });
-};
-exe();
+}
+
+// TODO: unsure how to handle short expressions like this:
+if (argument === 'npm -v') {
+  exe(argument, 'yarn -v');
+} else {
+  let transformedCommand: string;
+  // tslint:disable-next-line:no-inferrable-types
+  let transformedPkgDetails: string = '';
+  let transformedOptions: Array<string> | undefined;
+  let transformedOptionsString: string;
+
+  if (parsedArg.pkgdetails) {
+    transformedPkgDetails = parsedArg.pkgdetails;
+  }
+
+  if (parsedArg.options) {
+    transformedOptions = isoMorphCollection(parsedArg.options.trim().split(' '), equivalenceTable);
+  }
+
+  switch (parsedArg.command) {
+    case 'uninstall':
+      transformedCommand = 'remove';
+
+      if (transformedOptions && transformedOptions.some((value) => value === '**prod')) {
+        transformedOptions = transformedOptions.filter((value) => value !== '**prod');
+      } else if (transformedOptions && transformedOptions.some((value) => value === '**global')) {
+        transformedCommand = 'global remove';
+      }
+      break;
+    case 'install':
+      transformedCommand = 'add';
+
+      if (transformedOptions && transformedOptions.some((value) => value === '**prod')) {
+        transformedOptions = transformedOptions.filter((value) => value !== '**prod');
+      } else if (transformedOptions && transformedOptions.some((value) => value === '**global')) {
+        transformedCommand = 'global add';
+      } else if (!transformedPkgDetails) {
+        transformedCommand = 'install';
+      }
+      break;
+    default:
+      transformedCommand = parsedArg.command;
+  }
+  transformedOptionsString = (transformedOptions) ? transformedOptions.join(' ') : '';
+
+  let transformedExpression = [transformedCommand, transformedPkgDetails, transformedOptionsString].filter((value) => value.length > 0);
+
+  preexe(argument, transformedExpression);
+}

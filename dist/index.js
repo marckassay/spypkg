@@ -70,10 +70,11 @@ function outAdaptor(name) {
     if (name === void 0) { name = genericAdaptorFileName; }
     return path_1.join(outDirPath, name);
 }
-var configFilename = 'altpackage.config.json';
+var configFilename = 'package.json';
+var rootProperty = 'altpackage';
 var configFilePath = path_1.join(process.cwd(), configFilename);
 /**
- * Reads the `altpackage.config.json` by iterating the packages section of the file to create
+ * Reads the `package.json` by iterating the packages section of the file to create
  * symlinks. These symlinks are intended to reside in a location listed in the env's PATH so that
  * the CLI, IDE, node and/or any executable will find it "globally" but since symbolic will call the
  * local package. If called outside of project's directory will command will fail and if called in
@@ -86,20 +87,19 @@ function generate() {
         var config, configRaw, _i, _a, dependency;
         return __generator(this, function (_b) {
             switch (_b.label) {
-                case 0: return [4 /*yield*/, util.doesFileExistAsync(configFilePath, 'Unable to load altpackage.config.json')];
+                case 0: return [4 /*yield*/, util.doesFileExistAsync(configFilePath, 'Unable to load ' + configFilename)];
                 case 1:
                     _b.sent();
-                    return [4 /*yield*/, util.readFileAsync(configFilePath, 'Unable to read altpackage.config.json')];
+                    return [4 /*yield*/, util.readFileAsync(configFilePath, 'Unable to read ' + configFilename)];
                 case 2:
                     configRaw = _b.sent();
-                    console.log(configRaw);
                     try {
-                        config = JSON.parse(configRaw);
+                        config = JSON.parse(configRaw)[rootProperty];
                         // TODO: apply mapping from string to AltPackageConfig so that when it fails it is unkown
                         outDirPath = config.projectOutPath;
                     }
                     catch (error) {
-                        throw new Error('Unable to parse altpackage.config.json into a JSON object.');
+                        throw new Error("Unable to parse " + rootProperty + " property " + configFilename + " into a JSON object.");
                     }
                     _i = 0, _a = config.packages;
                     _b.label = 3;
@@ -119,7 +119,7 @@ function generate() {
     });
 }
 /**
-* Creates a dependency from the data parsed in package element of altpackage.config.json.
+* Creates a dependency from the data parsed in package element of package.json.
 *
 * @param {string} name the filename of the bash or batch file.
 * @param {string} commandDirectoryPath the directory of where the file will reside. this is the value
