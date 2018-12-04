@@ -40,14 +40,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var util_1 = require("util");
 var child = require("child_process");
 var exec = util_1.promisify(child.exec);
-// maps all npm options to yarn options
-function isoMorphCollection(target, source) {
+/**
+ * Maps values from `source` (an optionsEquivalenceTable) to `target`. `target` may be one or many segments
+ * of an npm expression, such as command or options.
+ *
+ * @param source an optionsEquivalenceTable that is declared
+ * @param target may be a segment of an npm expression such as command or options
+ */
+function isoMorphCollection(source, target) {
     return target.map(function (val) {
         var mappedval = source[val.trim()];
         return (mappedval) ? mappedval : val;
     });
 }
-var equivalenceTable = {
+var optionsEquivalenceTable = {
     '--no-package-lock': '--no-lockfile',
     '--production': '',
     '--save': '**prod',
@@ -68,47 +74,48 @@ var regex = new RegExp([
     '(?<pkgdetails>[a-z0-9\\>\\=\\:\\+\\#\\^\\.\\@\\-\\/]*|(?<!\\k<command>)$)?',
     '(?<options>(?:\\ [-]{1,2}[a-zA-Z]+(?:[-][a-z]+)?)*)$'
 ].join(''));
-var opts = Object.assign({}, process.env);
-opts.cwd = process.cwd();
-opts.stdio = 'inherit';
+var verboseEnabled;
 // tslint:disable-next-line:no-inferrable-types
 var argument = '';
 // prepare argv values into argument, so that regex can parse as expected
 for (var j = 2; j < process.argv.length; j++) {
-    argument += ' ' + process.argv[j];
+    if (process.argv[j] === '--verbose') {
+        verboseEnabled = true;
+    }
+    else {
+        argument += ' ' + process.argv[j];
+    }
 }
 argument = argument.trimLeft();
 var parsedArg = regex.exec(argument)['groups'];
-var preexe = function (npmExpression, yarnExpression) { return __awaiter(_this, void 0, void 0, function () {
-    var transformedExe, fullYarnExpression;
-    return __generator(this, function (_a) {
-        if (process.platform === 'win32') {
-            transformedExe = 'cmd';
-            if (!parsedArg.run) {
-                yarnExpression = ['/c', 'yarn'].concat(yarnExpression);
-            }
-            else {
-                yarnExpression = ['/c', 'yarn', 'run'].concat(yarnExpression);
-            }
+var getPrefixForYarnExpression = function (yarnExpression) {
+    var transformedExe;
+    if (process.platform === 'win32') {
+        transformedExe = 'cmd';
+        if (!parsedArg.run) {
+            yarnExpression = ['/c', 'yarn'].concat(yarnExpression);
         }
         else {
-            transformedExe = 'yarn';
-            if (parsedArg.run) {
-                yarnExpression = ['run'].concat(yarnExpression);
-            }
+            yarnExpression = ['/c', 'yarn', 'run'].concat(yarnExpression);
         }
-        fullYarnExpression = transformedExe + ' ' + yarnExpression.join(' ');
-        exe(npmExpression, fullYarnExpression);
-        return [2 /*return*/];
-    });
-}); };
+    }
+    else {
+        transformedExe = 'yarn';
+        if (parsedArg.run) {
+            yarnExpression = ['run'].concat(yarnExpression);
+        }
+    }
+    return transformedExe + ' ' + yarnExpression.join(' ');
+};
 var exe = function (npmExpression, yarnExpression) { return __awaiter(_this, void 0, void 0, function () {
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                console.log('The npm expression below has been transformed into the followed yarn expression:');
-                console.log(npmExpression);
-                console.log(yarnExpression);
+                if (verboseEnabled) {
+                    console.log('The npm expression below has been transformed into the followed yarn expression:');
+                    console.log(npmExpression);
+                    console.log(yarnExpression);
+                }
                 return [4 /*yield*/, exec(yarnExpression)
                         .then(function (onfulfilled) {
                         if (onfulfilled.stdout) {
@@ -125,7 +132,7 @@ var exe = function (npmExpression, yarnExpression) { return __awaiter(_this, voi
         }
     });
 }); };
-// TODO: unsure how to handle short expressions like this:
+// TODO: unsure how to handle short expressions like this with current regex:
 if (argument === 'npm -v') {
     exe(argument, 'yarn -v');
 }
@@ -139,7 +146,7 @@ else {
         transformedPkgDetails = parsedArg.pkgdetails;
     }
     if (parsedArg.options) {
-        transformedOptions = isoMorphCollection(parsedArg.options.trim().split(' '), equivalenceTable);
+        transformedOptions = isoMorphCollection(optionsEquivalenceTable, parsedArg.options.trim().split(' '));
     }
     switch (parsedArg.command) {
         case 'uninstall':
@@ -168,6 +175,6 @@ else {
     }
     transformedOptionsString = (transformedOptions) ? transformedOptions.join(' ') : '';
     var transformedExpression = [transformedCommand, transformedPkgDetails, transformedOptionsString].filter(function (value) { return value.length > 0; });
-    preexe(argument, transformedExpression);
+    exe(argument, getPrefixForYarnExpression(transformedExpression));
 }
 //# sourceMappingURL=npm-adaptor.js.map

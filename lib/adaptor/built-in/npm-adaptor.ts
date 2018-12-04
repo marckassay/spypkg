@@ -12,15 +12,21 @@ interface RegExShape {
   options: string;
 }
 
-// maps all npm options to yarn options
-function isoMorphCollection(target: string[], source: {}): string[] {
+/**
+ * Maps values from `source` (an optionsEquivalenceTable) to `target`. `target` may be one or many segments
+ * of an npm expression, such as command or options.
+ *
+ * @param source an optionsEquivalenceTable that is declared
+ * @param target may be a segment of an npm expression such as command or options
+ */
+function isoMorphCollection(source: {}, target: string[]): string[] {
   return target.map((val) => {
     const mappedval = source[val.trim()];
     return (mappedval) ? mappedval : val;
   });
 }
 
-const equivalenceTable = {
+const optionsEquivalenceTable = {
   '--no-package-lock': '--no-lockfile',
   '--production': '',
   '--save': '**prod',
@@ -43,21 +49,23 @@ const regex = new RegExp([
   '(?<options>(?:\\ [-]{1,2}[a-zA-Z]+(?:[-][a-z]+)?)*)$'
 ].join(''));
 
-const opts = Object.assign({}, process.env);
-opts.cwd = process.cwd();
-opts.stdio = 'inherit';
+let verboseEnabled: boolean;
 
 // tslint:disable-next-line:no-inferrable-types
 let argument: string = '';
 
 // prepare argv values into argument, so that regex can parse as expected
 for (let j = 2; j < process.argv.length; j++) {
-  argument += ' ' + process.argv[j];
+  if (process.argv[j] === '--verbose') {
+    verboseEnabled = true;
+  } else {
+    argument += ' ' + process.argv[j];
+  }
 }
 argument = argument.trimLeft();
 const parsedArg: RegExShape = regex.exec(argument)['groups'];
 
-const preexe = async (npmExpression: string, yarnExpression: string[]) => {
+const getPrefixForYarnExpression = (yarnExpression: string[]) => {
   let transformedExe: string;
 
   if (process.platform === 'win32') {
@@ -74,14 +82,16 @@ const preexe = async (npmExpression: string, yarnExpression: string[]) => {
     }
   }
 
-  const fullYarnExpression = transformedExe + ' ' + yarnExpression.join(' ');
-  exe(npmExpression, fullYarnExpression);
+  return transformedExe + ' ' + yarnExpression.join(' ');
 };
 
 const exe = async (npmExpression, yarnExpression) => {
-  console.log('The npm expression below has been transformed into the followed yarn expression:');
-  console.log(npmExpression);
-  console.log(yarnExpression);
+  if (verboseEnabled) {
+    console.log('The npm expression below has been transformed into the followed yarn expression:');
+    console.log(npmExpression);
+    console.log(yarnExpression);
+  }
+
   return await exec(yarnExpression)
     .then((onfulfilled) => {
       if (onfulfilled.stdout) {
@@ -96,7 +106,7 @@ const exe = async (npmExpression, yarnExpression) => {
     });
 }
 
-// TODO: unsure how to handle short expressions like this:
+// TODO: unsure how to handle short expressions like this with current regex:
 if (argument === 'npm -v') {
   exe(argument, 'yarn -v');
 } else {
@@ -111,7 +121,7 @@ if (argument === 'npm -v') {
   }
 
   if (parsedArg.options) {
-    transformedOptions = isoMorphCollection(parsedArg.options.trim().split(' '), equivalenceTable);
+    transformedOptions = isoMorphCollection(optionsEquivalenceTable, parsedArg.options.trim().split(' '));
   }
 
   switch (parsedArg.command) {
@@ -138,9 +148,10 @@ if (argument === 'npm -v') {
     default:
       transformedCommand = parsedArg.command;
   }
+
   transformedOptionsString = (transformedOptions) ? transformedOptions.join(' ') : '';
 
-  let transformedExpression = [transformedCommand, transformedPkgDetails, transformedOptionsString].filter((value) => value.length > 0);
+  const transformedExpression = [transformedCommand, transformedPkgDetails, transformedOptionsString].filter((value) => value.length > 0);
 
-  preexe(argument, transformedExpression);
+  exe(argument, getPrefixForYarnExpression(transformedExpression));
 }
