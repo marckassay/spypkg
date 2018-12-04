@@ -11,9 +11,7 @@
     "add-altpackages": "node ./node_modules/altpackage/dist/index.js",
     "remove-altpackages": "node ./node_modules/altpackage/dist/index.js -remove"
   },
-  "devDependencies": {
-    "sots": "^3.0.1"
-  },
+  "devDependencies": {},
   "altpackage": {
     "projectOutPath": ".\\out\\",
     "packages": [
