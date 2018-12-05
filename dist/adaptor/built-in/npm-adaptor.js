@@ -41,32 +41,55 @@ var util_1 = require("util");
 var child = require("child_process");
 var exec = util_1.promisify(child.exec);
 /**
- * Maps values from `source` (an optionsEquivalenceTable) to `target`. `target` may be one or many segments
- * of an npm expression, such as command or options.
+ * Maps values from equivalence tables to `target`. `target` is the npm expression and `segment`
+ * determines what mapped segment will be return. The equivalence tables are constants that are
+ * declared inside this function.
  *
- * @param source an optionsEquivalenceTable that is declared
- * @param target may be a segment of an npm expression such as command or options
+ * @param target the npm expression
+ * @param segment determines what segment of the expression this function will map and return.
  */
-function isoMorphCollection(source, target) {
-    return target.map(function (val) {
+function getIsoMorphedSegment(target, segment) {
+    var commandEquivalenceTable = {
+        'install [package] --save': 'add',
+        'install [package] --save-dev': 'add',
+        'install [package] --save-optional': 'add',
+        'install [package] --save-exact': 'add',
+        'install [package] --global': 'global add',
+        'update --global': 'global add',
+        'rebuild': 'add',
+    };
+    // tslint:disable-next-line:whitespace
+    var optionsEquivalenceTable = {
+        '--no-package-lock': '--no-lockfile',
+        '--production': '',
+        '--save': '**prod',
+        '--save-prod': '**prod',
+        '-P': '**prod',
+        '--save-dev': '--dev',
+        '-D': '--dev',
+        '--save-optional': '--optional',
+        '-O': '--optional',
+        '--save-exact': '--exact',
+        '-E': '--exact',
+        '--global': '**global'
+    };
+    var source;
+    switch (segment) {
+        case 'command':
+            source = commandEquivalenceTable;
+            break;
+        case 'options':
+            source = optionsEquivalenceTable;
+            break;
+        default:
+            break;
+    }
+    var targetSegment = target[segment].trim().split(' ');
+    return targetSegment.map(function (val) {
         var mappedval = source[val.trim()];
         return (mappedval) ? mappedval : val;
     });
 }
-var optionsEquivalenceTable = {
-    '--no-package-lock': '--no-lockfile',
-    '--production': '',
-    '--save': '**prod',
-    '--save-prod': '**prod',
-    '-P': '**prod',
-    '--save-dev': '--dev',
-    '-D': '--dev',
-    '--save-optional': '--optional',
-    '-O': '--optional',
-    '--save-exact': '--exact',
-    '-E': '--exact',
-    '--global': '**global'
-};
 var regex = new RegExp([
     '^(?<exe>npm)?\\ ?',
     '(?<run>(?<=\\k<exe> )run(?:-script)?)?\\ ?',
@@ -146,7 +169,7 @@ else {
         transformedPkgDetails = parsedArg.pkgdetails;
     }
     if (parsedArg.options) {
-        transformedOptions = isoMorphCollection(optionsEquivalenceTable, parsedArg.options.trim().split(' '));
+        transformedOptions = getIsoMorphedSegment(parsedArg, 'options');
     }
     switch (parsedArg.command) {
         case 'uninstall':

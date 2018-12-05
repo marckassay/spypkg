@@ -8,7 +8,8 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "install-harness": "node harness/deploy.js"
+    "install-harness": "node ./harness/deploy.js",
+    "add-altpackages": "node ./dist/index.js"
   },
   "files": [
     "lib",
@@ -26,5 +27,14 @@
   },
   "engines": {
     "node": ">=10.12.0"
+  },
+  "altpackage": {
+    "projectOutPath": ".\\out\\",
+    "packages": [
+      {
+        "name": "tslint",
+        "location": "{yarn global bin}"
+      }
+    ]
   }
 }

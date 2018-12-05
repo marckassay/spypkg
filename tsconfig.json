@@ -8,7 +8,6 @@
     "moduleResolution": "node",
     "emitDecoratorMetadata": false,
     "experimentalDecorators": false,
-    "newLine": "LF",
     "target": "es5",
     "lib": [
       "es2017",

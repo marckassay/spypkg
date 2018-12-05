@@ -1,88 +1,104 @@
 #!/usr/bin/env node
 
-import { promisify } from 'util';
 import * as child from 'child_process';
+import { promisify } from 'util';
 const exec = promisify(child.exec);
 
-interface RegExShape {
+interface NPMExpressionShape {
   exe?: string;
   run?: string;
   command: string;
-  pkgdetails: string;
-  options: string;
+  pkgdetails?: string;
+  options?: string;
 }
 
 /**
- * Maps values from `source` (an optionsEquivalenceTable) to `target`. `target` may be one or many segments
- * of an npm expression, such as command or options.
- *
- * @param source an optionsEquivalenceTable that is declared
- * @param target may be a segment of an npm expression such as command or options
+ * @external https://regex101.com/r/6PIM2J/3
  */
-function isoMorphCollection(source: {}, target: string[]): string[] {
-  return target.map((val) => {
-    const mappedval = source[val.trim()];
-    return (mappedval) ? mappedval : val;
-  });
-}
-
-const optionsEquivalenceTable = {
-  '--no-package-lock': '--no-lockfile',
-  '--production': '',
-  '--save': '**prod',
-  '--save-prod': '**prod',
-  '-P': '**prod',
-  '--save-dev': '--dev',
-  '-D': '--dev',
-  '--save-optional': '--optional',
-  '-O': '--optional',
-  '--save-exact': '--exact',
-  '-E': '--exact',
-  '--global': '**global'
-};
-
 const regex = new RegExp([
   '^(?<exe>npm)?\\ ?',
   '(?<run>(?<=\\k<exe> )run(?:-script)?)?\\ ?',
-  '(?<command>(?<=\\k<run> )[a-z]+(?:[:][a-z]+)?|(?<!\\k<run> )[a-z]+(?:[-][a-z]+)?)(?<=\\k<command>)\\ ?',
-  '(?<pkgdetails>[a-z0-9\\>\\=\\:\\+\\#\\^\\.\\@\\-\\/]*|(?<!\\k<command>)$)?',
-  '(?<options>(?:\\ [-]{1,2}[a-zA-Z]+(?:[-][a-z]+)?)*)$'
+  '(?<command>(?<=\\k<run> )[a-z]+(?:[:][a-z]+)?|(?<!\\k<run> )[a-z]+(?:[-][a-z]+)?)?\\ ?',
+  '(?<pkgdetails>[a-z0-9\\>\\=\\:\\+\\#\\^\\.\\@\\/][a-z0-9\\>\\=\\:\\+\\#\\^\\.\\@\\/\\-]+)?\\ ?',
+  '(?<options>(?:\\ [-]{1,2}[a-zA-Z]+(?:[-][a-z]+)*)*)?$'
 ].join(''));
 
-let verboseEnabled: boolean;
-
-// tslint:disable-next-line:no-inferrable-types
-let argument: string = '';
-
-// prepare argv values into argument, so that regex can parse as expected
-for (let j = 2; j < process.argv.length; j++) {
-  if (process.argv[j] === '--verbose') {
-    verboseEnabled = true;
-  } else {
-    argument += ' ' + process.argv[j];
+function getIsoMorphedExpression(npmex: NPMExpressionShape): string {
+  const commmandsEquivalenceTable = {
+    'install': 'add',
+    'uninstall': 'remove'
   }
-}
-argument = argument.trimLeft();
-const parsedArg: RegExShape = regex.exec(argument)['groups'];
 
-const getPrefixForYarnExpression = (yarnExpression: string[]) => {
-  let transformedExe: string;
+  const optionsEquivalenceTable = {
+    '--no-package-lock': '--no-lockfile',
+    '--production': '',
+    '--save': '',
+    '--save-prod': '',
+    '-P': '',
+    '--save-dev': '--dev',
+    '-D': '--dev',
+    '--save-optional': '--optional',
+    '-O': '--optional',
+    '--save-exact': '--exact',
+    '-E': '--exact',
+    '--global': ''
+  };
 
-  if (process.platform === 'win32') {
-    transformedExe = 'cmd';
-    if (!parsedArg.run) {
-      yarnExpression = ['/c', 'yarn'].concat(yarnExpression);
+  const map = (table, value: string | string[]) => {
+    if (typeof value === "string") {
+      value = [value];
+    }
+    return value.map((val) => {
+      const mappedval = table[val.trim()];
+      return (mappedval) ? mappedval : val;
+    });
+  };
+
+  const macromap = () => {
+    npmex.command = map(commmandsEquivalenceTable, npmex.command)[0];
+    options = map(optionsEquivalenceTable, options);
+  };
+
+  npmex.exe = 'yarn';
+  let options: string[] = (npmex.options) ? npmex.options.split(' ') : [];
+
+  if (npmex.command && !npmex.pkgdetails) {
+    if (npmex.command === 'update' && options.indexOf('--global') !== -1) {
+      npmex.command = 'global upgrade';
+      options = options.filter((value) => value !== '--global');
+    } else if (npmex.command === 'rebuild') {
+      npmex.command = 'add';
+      options.push('--force');
+    } else if (options.length) {
+      if (options.indexOf('--no-package-lock') === -1) {
+        npmex.command = map(commmandsEquivalenceTable, npmex.command)[0];
+      } else {
+        npmex.command = 'install';
+      }
+      options = map(optionsEquivalenceTable, options);
+    }
+  } else if (npmex.command && npmex.pkgdetails) {
+    if (npmex.command === 'install' && options.indexOf('--global') !== -1) {
+      npmex.command = 'global add';
+      options = options.filter((value) => value !== '--global');
+    } else if (npmex.command === 'version') {
+      options = ['--' + npmex.pkgdetails];
+      npmex.pkgdetails = '';
     } else {
-      yarnExpression = ['/c', 'yarn', 'run'].concat(yarnExpression);
+      macromap();
     }
   } else {
-    transformedExe = 'yarn';
-    if (parsedArg.run) {
-      yarnExpression = ['run'].concat(yarnExpression);
-    }
+    macromap();
   }
 
-  return transformedExe + ' ' + yarnExpression.join(' ');
+  return [npmex.exe, npmex.run, npmex.command, npmex.pkgdetails]
+    .concat(options)
+    .filter((value) => {
+      if (value != '' || value != undefined) {
+        return value;
+      }
+    })
+    .join(' ');
 };
 
 const exe = async (npmExpression, yarnExpression) => {
@@ -104,54 +120,25 @@ const exe = async (npmExpression, yarnExpression) => {
     .catch((reason) => {
       console.log(reason);
     });
+};
+
+let verboseEnabled: boolean;
+let argument: string = '';
+
+// prepare argv values into argument, so that regex can parse as expected
+for (let j = 2; j < process.argv.length; j++) {
+  if (process.argv[j] === '--verbose') {
+    verboseEnabled = true;
+  } else {
+    argument += ' ' + process.argv[j];
+  }
 }
+argument = argument.trimLeft();
 
-// TODO: unsure how to handle short expressions like this with current regex:
-if (argument === 'npm -v') {
-  exe(argument, 'yarn -v');
-} else {
-  let transformedCommand: string;
-  // tslint:disable-next-line:no-inferrable-types
-  let transformedPkgDetails: string = '';
-  let transformedOptions: Array<string> | undefined;
-  let transformedOptionsString: string;
+let prefix: string = (process.platform === 'win32') ? 'cmd /c' : '';
 
-  if (parsedArg.pkgdetails) {
-    transformedPkgDetails = parsedArg.pkgdetails;
-  }
+const parsedArg: NPMExpressionShape = regex.exec(argument)['groups'];
 
-  if (parsedArg.options) {
-    transformedOptions = isoMorphCollection(optionsEquivalenceTable, parsedArg.options.trim().split(' '));
-  }
+const transformedExpression: string = getIsoMorphedExpression(parsedArg);
 
-  switch (parsedArg.command) {
-    case 'uninstall':
-      transformedCommand = 'remove';
-
-      if (transformedOptions && transformedOptions.some((value) => value === '**prod')) {
-        transformedOptions = transformedOptions.filter((value) => value !== '**prod');
-      } else if (transformedOptions && transformedOptions.some((value) => value === '**global')) {
-        transformedCommand = 'global remove';
-      }
-      break;
-    case 'install':
-      transformedCommand = 'add';
-
-      if (transformedOptions && transformedOptions.some((value) => value === '**prod')) {
-        transformedOptions = transformedOptions.filter((value) => value !== '**prod');
-      } else if (transformedOptions && transformedOptions.some((value) => value === '**global')) {
-        transformedCommand = 'global add';
-      } else if (!transformedPkgDetails) {
-        transformedCommand = 'install';
-      }
-      break;
-    default:
-      transformedCommand = parsedArg.command;
-  }
-
-  transformedOptionsString = (transformedOptions) ? transformedOptions.join(' ') : '';
-
-  const transformedExpression = [transformedCommand, transformedPkgDetails, transformedOptionsString].filter((value) => value.length > 0);
-
-  exe(argument, getPrefixForYarnExpression(transformedExpression));
-}
+exe(argument, (prefix + ' ' + transformedExpression).trimLeft());
