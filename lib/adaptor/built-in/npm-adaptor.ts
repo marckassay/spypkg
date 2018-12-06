@@ -26,6 +26,7 @@ const regex = new RegExp([
 function getIsoMorphedExpression(npmex: NPMExpressionShape): string {
   const commmandsEquivalenceTable = {
     'install': 'add',
+    'i': 'add',
     'uninstall': 'remove'
   }
 
@@ -49,18 +50,21 @@ function getIsoMorphedExpression(npmex: NPMExpressionShape): string {
       value = [value];
     }
     return value.map((val) => {
-      const mappedval = table[val.trim()];
-      return (mappedval) ? mappedval : val;
+      const mappedval = table[val];
+      return (mappedval !== undefined) ? mappedval : val;
     });
   };
 
   const macromap = () => {
-    npmex.command = map(commmandsEquivalenceTable, npmex.command)[0];
+    if (npmex.command) {
+      npmex.command = map(commmandsEquivalenceTable, npmex.command)[0];
+    }
     options = map(optionsEquivalenceTable, options);
   };
 
   npmex.exe = 'yarn';
-  let options: string[] = (npmex.options) ? npmex.options.split(' ') : [];
+
+  let options: string[] = (npmex.options) ? npmex.options.split(' ').filter(value => value.length) : [];
 
   if (npmex.command && !npmex.pkgdetails) {
     if (npmex.command === 'update' && options.indexOf('--global') !== -1) {
@@ -87,7 +91,6 @@ function getIsoMorphedExpression(npmex: NPMExpressionShape): string {
     } else {
       macromap();
     }
-  } else {
     macromap();
   }
 

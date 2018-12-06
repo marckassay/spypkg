@@ -37,99 +37,99 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var util_1 = require("util");
 var child = require("child_process");
+var util_1 = require("util");
 var exec = util_1.promisify(child.exec);
 /**
- * Maps values from equivalence tables to `target`. `target` is the npm expression and `segment`
- * determines what mapped segment will be return. The equivalence tables are constants that are
- * declared inside this function.
- *
- * @param target the npm expression
- * @param segment determines what segment of the expression this function will map and return.
+ * @external https://regex101.com/r/6PIM2J/3
  */
-function getIsoMorphedSegment(target, segment) {
-    var commandEquivalenceTable = {
-        'install [package] --save': 'add',
-        'install [package] --save-dev': 'add',
-        'install [package] --save-optional': 'add',
-        'install [package] --save-exact': 'add',
-        'install [package] --global': 'global add',
-        'update --global': 'global add',
-        'rebuild': 'add',
+var regex = new RegExp([
+    '^(?<exe>npm)?\\ ?',
+    '(?<run>(?<=\\k<exe> )run(?:-script)?)?\\ ?',
+    '(?<command>(?<=\\k<run> )[a-z]+(?:[:][a-z]+)?|(?<!\\k<run> )[a-z]+(?:[-][a-z]+)?)?\\ ?',
+    '(?<pkgdetails>[a-z0-9\\>\\=\\:\\+\\#\\^\\.\\@\\/][a-z0-9\\>\\=\\:\\+\\#\\^\\.\\@\\/\\-]+)?\\ ?',
+    '(?<options>(?:\\ [-]{1,2}[a-zA-Z]+(?:[-][a-z]+)*)*)?$'
+].join(''));
+function getIsoMorphedExpression(npmex) {
+    var commmandsEquivalenceTable = {
+        'install': 'add',
+        'i': 'add',
+        'uninstall': 'remove'
     };
-    // tslint:disable-next-line:whitespace
     var optionsEquivalenceTable = {
         '--no-package-lock': '--no-lockfile',
         '--production': '',
-        '--save': '**prod',
-        '--save-prod': '**prod',
-        '-P': '**prod',
+        '--save': '',
+        '--save-prod': '',
+        '-P': '',
         '--save-dev': '--dev',
         '-D': '--dev',
         '--save-optional': '--optional',
         '-O': '--optional',
         '--save-exact': '--exact',
         '-E': '--exact',
-        '--global': '**global'
+        '--global': ''
     };
-    var source;
-    switch (segment) {
-        case 'command':
-            source = commandEquivalenceTable;
-            break;
-        case 'options':
-            source = optionsEquivalenceTable;
-            break;
-        default:
-            break;
+    var map = function (table, value) {
+        if (typeof value === "string") {
+            value = [value];
+        }
+        return value.map(function (val) {
+            var mappedval = table[val];
+            return (mappedval !== undefined) ? mappedval : val;
+        });
+    };
+    var macromap = function () {
+        if (npmex.command) {
+            npmex.command = map(commmandsEquivalenceTable, npmex.command)[0];
+        }
+        options = map(optionsEquivalenceTable, options);
+    };
+    npmex.exe = 'yarn';
+    var options = (npmex.options) ? npmex.options.split(' ').filter(function (value) { return value.length; }) : [];
+    if (npmex.command && !npmex.pkgdetails) {
+        if (npmex.command === 'update' && options.indexOf('--global') !== -1) {
+            npmex.command = 'global upgrade';
+            options = options.filter(function (value) { return value !== '--global'; });
+        }
+        else if (npmex.command === 'rebuild') {
+            npmex.command = 'add';
+            options.push('--force');
+        }
+        else if (options.length) {
+            if (options.indexOf('--no-package-lock') === -1) {
+                npmex.command = map(commmandsEquivalenceTable, npmex.command)[0];
+            }
+            else {
+                npmex.command = 'install';
+            }
+            options = map(optionsEquivalenceTable, options);
+        }
     }
-    var targetSegment = target[segment].trim().split(' ');
-    return targetSegment.map(function (val) {
-        var mappedval = source[val.trim()];
-        return (mappedval) ? mappedval : val;
-    });
-}
-var regex = new RegExp([
-    '^(?<exe>npm)?\\ ?',
-    '(?<run>(?<=\\k<exe> )run(?:-script)?)?\\ ?',
-    '(?<command>(?<=\\k<run> )[a-z]+(?:[:][a-z]+)?|(?<!\\k<run> )[a-z]+(?:[-][a-z]+)?)(?<=\\k<command>)\\ ?',
-    '(?<pkgdetails>[a-z0-9\\>\\=\\:\\+\\#\\^\\.\\@\\-\\/]*|(?<!\\k<command>)$)?',
-    '(?<options>(?:\\ [-]{1,2}[a-zA-Z]+(?:[-][a-z]+)?)*)$'
-].join(''));
-var verboseEnabled;
-// tslint:disable-next-line:no-inferrable-types
-var argument = '';
-// prepare argv values into argument, so that regex can parse as expected
-for (var j = 2; j < process.argv.length; j++) {
-    if (process.argv[j] === '--verbose') {
-        verboseEnabled = true;
-    }
-    else {
-        argument += ' ' + process.argv[j];
-    }
-}
-argument = argument.trimLeft();
-var parsedArg = regex.exec(argument)['groups'];
-var getPrefixForYarnExpression = function (yarnExpression) {
-    var transformedExe;
-    if (process.platform === 'win32') {
-        transformedExe = 'cmd';
-        if (!parsedArg.run) {
-            yarnExpression = ['/c', 'yarn'].concat(yarnExpression);
+    else if (npmex.command && npmex.pkgdetails) {
+        if (npmex.command === 'install' && options.indexOf('--global') !== -1) {
+            npmex.command = 'global add';
+            options = options.filter(function (value) { return value !== '--global'; });
+        }
+        else if (npmex.command === 'version') {
+            options = ['--' + npmex.pkgdetails];
+            npmex.pkgdetails = '';
         }
         else {
-            yarnExpression = ['/c', 'yarn', 'run'].concat(yarnExpression);
+            macromap();
         }
+        macromap();
     }
-    else {
-        transformedExe = 'yarn';
-        if (parsedArg.run) {
-            yarnExpression = ['run'].concat(yarnExpression);
+    return [npmex.exe, npmex.run, npmex.command, npmex.pkgdetails]
+        .concat(options)
+        .filter(function (value) {
+        if (value != '' || value != undefined) {
+            return value;
         }
-    }
-    return transformedExe + ' ' + yarnExpression.join(' ');
-};
+    })
+        .join(' ');
+}
+;
 var exe = function (npmExpression, yarnExpression) { return __awaiter(_this, void 0, void 0, function () {
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -155,49 +155,20 @@ var exe = function (npmExpression, yarnExpression) { return __awaiter(_this, voi
         }
     });
 }); };
-// TODO: unsure how to handle short expressions like this with current regex:
-if (argument === 'npm -v') {
-    exe(argument, 'yarn -v');
+var verboseEnabled;
+var argument = '';
+// prepare argv values into argument, so that regex can parse as expected
+for (var j = 2; j < process.argv.length; j++) {
+    if (process.argv[j] === '--verbose') {
+        verboseEnabled = true;
+    }
+    else {
+        argument += ' ' + process.argv[j];
+    }
 }
-else {
-    var transformedCommand = void 0;
-    // tslint:disable-next-line:no-inferrable-types
-    var transformedPkgDetails = '';
-    var transformedOptions = void 0;
-    var transformedOptionsString = void 0;
-    if (parsedArg.pkgdetails) {
-        transformedPkgDetails = parsedArg.pkgdetails;
-    }
-    if (parsedArg.options) {
-        transformedOptions = getIsoMorphedSegment(parsedArg, 'options');
-    }
-    switch (parsedArg.command) {
-        case 'uninstall':
-            transformedCommand = 'remove';
-            if (transformedOptions && transformedOptions.some(function (value) { return value === '**prod'; })) {
-                transformedOptions = transformedOptions.filter(function (value) { return value !== '**prod'; });
-            }
-            else if (transformedOptions && transformedOptions.some(function (value) { return value === '**global'; })) {
-                transformedCommand = 'global remove';
-            }
-            break;
-        case 'install':
-            transformedCommand = 'add';
-            if (transformedOptions && transformedOptions.some(function (value) { return value === '**prod'; })) {
-                transformedOptions = transformedOptions.filter(function (value) { return value !== '**prod'; });
-            }
-            else if (transformedOptions && transformedOptions.some(function (value) { return value === '**global'; })) {
-                transformedCommand = 'global add';
-            }
-            else if (!transformedPkgDetails) {
-                transformedCommand = 'install';
-            }
-            break;
-        default:
-            transformedCommand = parsedArg.command;
-    }
-    transformedOptionsString = (transformedOptions) ? transformedOptions.join(' ') : '';
-    var transformedExpression = [transformedCommand, transformedPkgDetails, transformedOptionsString].filter(function (value) { return value.length > 0; });
-    exe(argument, getPrefixForYarnExpression(transformedExpression));
-}
+argument = argument.trimLeft();
+var prefix = (process.platform === 'win32') ? 'cmd /c' : '';
+var parsedArg = regex.exec(argument)['groups'];
+var transformedExpression = getIsoMorphedExpression(parsedArg);
+exe(argument, (prefix + ' ' + transformedExpression).trimLeft());
 //# sourceMappingURL=npm-adaptor.js.map
