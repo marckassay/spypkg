@@ -129,11 +129,20 @@ async function addCommandDependency(name: string, commandDirectoryPath: string, 
     await util.replaceTokenInFile(cmdDependencyValue, '{AdaptorPath}', adaptorName);
   }
 
+  if (verboseEnabled) {
+    console.log(`Adding '${name}' in: ${commandPath}`);
+    console.log(`Adding '${name}' in: ${commandPath}.cmd`);
+  }
   await util.createSymlink(bashDependencyValue, commandPath);
   await util.createSymlink(cmdDependencyValue, commandPath + '.cmd');
 }
 
 async function removeCommmandDependency(name: string, commandDirectoryPath: string) {
+  if (verboseEnabled) {
+    console.log(`Removing '${name}' in: ${commandDirectoryPath}`);
+    console.log(`Removing '${name}' in: ${commandDirectoryPath}.cmd`);
+  }
+
   // resolve commandDirectoryPath if its in a scriptblock.
   if (commandDirectoryPath.startsWith('{') || commandDirectoryPath.endsWith('}')) {
     commandDirectoryPath = await util.executeScriptBlock(commandDirectoryPath, 'Unable to execute the following scriptblock: ');
@@ -168,7 +177,9 @@ for (let j = 2; j < process.argv.length; j++) {
     removePackages = true;
   }
 }
-
+console.log(process.argv);
+console.log(verboseEnabled);
+console.log(removePackages);
 if (removePackages === false) {
   addAltpackages();
 } else {

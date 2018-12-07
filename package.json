@@ -20,6 +20,7 @@
   "devDependencies": {
     "@types/fs-extra": "^5.0.4",
     "fs-extra": "^7.0.1",
+    "tslint-clean-code": "^0.2.9",
     "typescript": "^3.2.1"
   },
   "dependencies": {

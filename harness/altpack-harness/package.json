@@ -2,16 +2,14 @@
   "name": "altpack-harness",
   "version": "0.0.1",
   "license": "MIT",
-  "main": "lib/index.ts",
   "repository": "https://github.com/marckassay/altpackage.git",
   "description": "Test harness for 'altpackage'",
   "author": "Marc Kassay <marckassay@gmail.com>",
   "private": true,
   "scripts": {
     "add-altpackages": "node ./node_modules/altpackage/dist/index.js",
-    "remove-altpackages": "node ./node_modules/altpackage/dist/index.js -remove"
+    "remove-altpackages": "node ./node_modules/altpackage/dist/index.js --remove"
   },
-  "devDependencies": {},
   "altpackage": {
     "projectOutPath": ".\\out\\",
     "packages": [
