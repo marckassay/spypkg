@@ -15,5 +15,11 @@
       "es2017",
       "dom"
     ]
-  }
+  },
+  "include": [
+    "lib/utils.ts",
+    "lib/index.ts",
+    "lib/adaptor/adaptor.ts",
+    "lib/adaptor/built-in/npm-adaptor.ts"
+  ]
 }

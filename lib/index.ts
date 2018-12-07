@@ -95,6 +95,11 @@ async function addCommandDependency(name: string, commandDirectoryPath: string, 
   let cmdDependencyValue: string;
   let adaptorValue: string;
 
+  // resolve commandDirectoryPath if its in a scriptblock.
+  if (commandDirectoryPath.startsWith('{') || commandDirectoryPath.endsWith('}')) {
+    commandDirectoryPath = await util.executeScriptBlock(commandDirectoryPath, 'Unable to execute the following scriptblock: ');
+  }
+
   const commandPath: string = join(commandDirectoryPath, name);
 
   if (!adaptor) {
@@ -130,25 +135,26 @@ async function addCommandDependency(name: string, commandDirectoryPath: string, 
   }
 
   if (verboseEnabled) {
-    console.log(`Adding '${name}' in: ${commandPath}`);
-    console.log(`Adding '${name}' in: ${commandPath}.cmd`);
+    console.log(`[altpackage] Adding '${name}' in: ${commandPath}`);
+    console.log(`[altpackage] Adding '${name}' in: ${commandPath}.cmd`);
   }
   await util.createSymlink(bashDependencyValue, commandPath);
   await util.createSymlink(cmdDependencyValue, commandPath + '.cmd');
 }
 
 async function removeCommmandDependency(name: string, commandDirectoryPath: string) {
-  if (verboseEnabled) {
-    console.log(`Removing '${name}' in: ${commandDirectoryPath}`);
-    console.log(`Removing '${name}' in: ${commandDirectoryPath}.cmd`);
-  }
-
   // resolve commandDirectoryPath if its in a scriptblock.
   if (commandDirectoryPath.startsWith('{') || commandDirectoryPath.endsWith('}')) {
     commandDirectoryPath = await util.executeScriptBlock(commandDirectoryPath, 'Unable to execute the following scriptblock: ');
   }
 
   const commandPath: string = join(commandDirectoryPath, name);
+
+  if (verboseEnabled) {
+    console.log(`[altpackage] Removing '${name}' in: ${commandPath}`);
+    console.log(`[altpackage] Removing '${name}' in: ${commandPath}.cmd`);
+  }
+
   await util.doesFileExistAsync(commandPath)
     .then((value: boolean) => {
       if (value === true) {
@@ -166,20 +172,18 @@ async function removeCommmandDependency(name: string, commandDirectoryPath: stri
   return Promise.resolve();
 }
 
-let verboseEnabled: boolean;
-let removePackages: boolean;
+let verboseEnabled: boolean = false;
+let removePackages: boolean = false;
 
 // prepare argv values into argument, so that regex can parse as expected
-for (let j = 2; j < process.argv.length; j++) {
+for (let j = 0; j < process.argv.length; j++) {
   if (process.argv[j] === '--verbose') {
     verboseEnabled = true;
   } else if (process.argv[j] === '--remove') {
     removePackages = true;
   }
 }
-console.log(process.argv);
-console.log(verboseEnabled);
-console.log(removePackages);
+
 if (removePackages === false) {
   addAltpackages();
 } else {

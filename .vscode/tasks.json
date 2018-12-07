@@ -13,20 +13,6 @@
       ]
     },
     {
-      "label": "Build lib for TypeScript",
-      "type": "typescript",
-      "tsconfig": "altpackage\\tsconfig.json",
-      "problemMatcher": [
-        "$tsc"
-      ]
-    },
-    {
-      "label": "Copy bash and batch files",
-      "type": "shell",
-      "command": "xcopy 'lib\\dependency\\*.*' 'dist\\'",
-      "problemMatcher": []
-    },
-    {
       "label": "Watch harness for TypeScript",
       "type": "typescript",
       "tsconfig": "altpackage\\harness\\tsconfig.json",
@@ -36,8 +22,28 @@
       ]
     },
     {
+      "label": "Build lib for TypeScript",
+      "type": "typescript",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "tsconfig": "altpackage\\tsconfig.json",
+      "problemMatcher": [
+        "$tsc"
+      ]
+    },
+    {
+      "label": "Copy bash and batch files",
+      "type": "shell",
+      "group": "build",
+      "command": "xcopy 'lib\\dependency\\*.*' 'dist\\'",
+      "problemMatcher": []
+    },
+    {
       "label": "Build harness for TypeScript",
       "type": "typescript",
+      "group": "build",
       "tsconfig": "altpackage\\harness\\tsconfig.json",
       "problemMatcher": [
         "$tsc"
