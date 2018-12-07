@@ -12,17 +12,6 @@ interface AltPackageConfig {
   }];
 }
 
-/**
- * Relative path from project contains `genericBashDependencyFileName` and `genericCmdDependencyFileName`.
- */
-// const libDependencyDirPath = './lib/dependency';
-
-/**
- * Relative path from project that contains `genericAdaptorFileName`.
- */
-// const libAdaptorDirPath = './lib/adaptor';
-
-
 const genericBashDependencyFileName = 'dependency';
 const genericCmdDependencyFileName = 'dependency.cmd';
 const customBashDependencyFileName = 'x-dependency';
@@ -30,7 +19,7 @@ const customCmdDependencyFileName = 'x-dependency.cmd';
 const genericAdaptorFileName = 'adaptor.js';
 
 /**
- * The location to the `out` folder. This is intended to reside at the project root directory.
+ * The location to the `out` folder. This is intended to reside in the project root directory.
  */
 let outDirPath: string;
 
@@ -53,58 +42,60 @@ const configFilename = 'package.json';
 const rootProperty = 'altpackage';
 const configFilePath: string = join(process.cwd(), configFilename);
 
-
-/**
- * Reads the `package.json` by iterating the packages section of the file to create
- * symlinks. These symlinks are intended to reside in a location listed in the env's PATH so that
- * the CLI, IDE, node and/or any executable will find it "globally" but since symbolic will call the
- * local package. If called outside of project's directory will command will fail and if called in
- * another project with same symbolic links, it will seek for the package(s) for that project.
- *
- * This is developed to work on POSIX and Windows.
- */
-async function generate() {
-  /**
-   * JS Object that represents `package.json` contents.
-   */
-  let config: AltPackageConfig;
-
-  await util.doesFileExistAsync(configFilePath, 'Unable to load ' + configFilename);
-
-  const configRaw: string = await util.readFileAsync(configFilePath, 'Unable to read ' + configFilename);
+async function loadConfiguration() {
   try {
-    config = JSON.parse(configRaw)[rootProperty];
-    // TODO: apply mapping from string to AltPackageConfig so that when it fails it is unkown
-    outDirPath = config.projectOutPath;
+    await util.doesFileExistAsync(configFilePath, 'Unable to load ' + configFilename);
+
+    const configRaw: string = await util.readFileAsync(configFilePath, 'Unable to read ' + configFilename);
+
+    return JSON.parse(configRaw)[rootProperty];
   } catch (error) {
     throw new Error(`Unable to parse ${rootProperty} property ${configFilename} into a JSON object.`);
-  }
-
-  for (const dependency of config.packages) {
-    await newCommandDependency(dependency.name, dependency.location, dependency.adaptor);
   }
 }
 
 /**
-* Creates a dependency from the data parsed in package element of package.json.
+ * Reads the `package.json` by iterating the packages section of the file to create batch and cmd
+ * files. These files are intended to reside in a location listed in the env's PATH so that
+ * the CLI, IDE, node and/or any executable will find it "globally". If executed outside of project's
+ * directory since this is developed to work only relative to project.
+ *
+ * This is developed to work on POSIX and Windows.
+ */
+async function addAltpackages() {
+  let config: AltPackageConfig = await loadConfiguration();
+  outDirPath = config.projectOutPath;
+
+  for (const dependency of config.packages) {
+    await removeCommmandDependency(dependency.name, dependency.location);
+    await addCommandDependency(dependency.name, dependency.location, dependency.adaptor);
+  }
+}
+
+async function removeAltpackages() {
+  let config: AltPackageConfig = await loadConfiguration();
+  outDirPath = config.projectOutPath;
+
+  for (const dependency of config.packages) {
+    await removeCommmandDependency(dependency.name, dependency.location);
+  }
+}
+
+/**
+* Creates a dependency from the data parsed in packages property of package.json.
 *
-* @param {string} name the filename of the bash or batch file.
-* @param {string} commandDirectoryPath the directory of where the file will reside. this is the value
-of the `location` property of the JSON object.
+* @param {string} name the command name that is to be used in shell.
+* @param {string} commandDirectoryPath the directory of where the files will reside. this is the value
+of the `location` property of the JSON object. This value must be listed in your operating system's
+environment variable.
 * @param {string} adaptor the JS file where the command resolves to. Defaults to `adaptor.js`.
 */
-async function newCommandDependency(name: string, commandDirectoryPath: string, adaptor?: string) {
+async function addCommandDependency(name: string, commandDirectoryPath: string, adaptor?: string) {
   let bashDependencyValue: string;
   let cmdDependencyValue: string;
   let adaptorValue: string;
 
-  // resolve commandDirectoryPath if its in a scriptblock (or partial scriptblock which must fail).
-  if (commandDirectoryPath.startsWith('{') || commandDirectoryPath.endsWith('}')) {
-    commandDirectoryPath = await util.executeScriptBlock(commandDirectoryPath, 'Unable to execute the following scriptblock: ');
-  }
-
-  const symbolicFilePath: string = join(commandDirectoryPath, name);
-  await checkAndRemoveExisitingCommandFiles(symbolicFilePath);
+  const commandPath: string = join(commandDirectoryPath, name);
 
   if (!adaptor) {
     await util.checkAndCreateACopy(libGenericBashDependency, outBashDependency(), true);
@@ -114,7 +105,6 @@ async function newCommandDependency(name: string, commandDirectoryPath: string, 
     bashDependencyValue = outBashDependency();
     cmdDependencyValue = outCmdDependency();
   } else {
-
     if (adaptor === "{built-in}") {
       adaptor = join(__dirname, 'adaptor', 'built-in', name + '-adaptor.js');
     }
@@ -139,28 +129,48 @@ async function newCommandDependency(name: string, commandDirectoryPath: string, 
     await util.replaceTokenInFile(cmdDependencyValue, '{AdaptorPath}', adaptorName);
   }
 
-  await util.createSymlink(bashDependencyValue, symbolicFilePath);
-  await util.createSymlink(cmdDependencyValue, symbolicFilePath + '.cmd');
-
-
+  await util.createSymlink(bashDependencyValue, commandPath);
+  await util.createSymlink(cmdDependencyValue, commandPath + '.cmd');
 }
 
-async function checkAndRemoveExisitingCommandFiles(path: string) {
-  await util.doesFileExistAsync(path)
+async function removeCommmandDependency(name: string, commandDirectoryPath: string) {
+  // resolve commandDirectoryPath if its in a scriptblock.
+  if (commandDirectoryPath.startsWith('{') || commandDirectoryPath.endsWith('}')) {
+    commandDirectoryPath = await util.executeScriptBlock(commandDirectoryPath, 'Unable to execute the following scriptblock: ');
+  }
+
+  const commandPath: string = join(commandDirectoryPath, name);
+  await util.doesFileExistAsync(commandPath)
     .then((value: boolean) => {
       if (value === true) {
-        util.removeSymlinks(path, 'Unable to remove the file. Do you have permissions to access this file?: ');
+        util.removeSymlinks(commandPath, 'Unable to remove the file. Do you have permissions to access this file?: ');
       }
     });
 
-  await util.doesFileExistAsync(path + '.cmd')
+  await util.doesFileExistAsync(commandPath + '.cmd')
     .then((value: boolean) => {
       if (value === true) {
-        util.removeSymlinks(path + '.cmd', 'Unable to remove the file. Do you have permissions to access this file?: ');
+        util.removeSymlinks(commandPath + '.cmd', 'Unable to remove the file. Do you have permissions to access this file?: ');
       }
     });
 
   return Promise.resolve();
 }
 
-generate();
+let verboseEnabled: boolean;
+let removePackages: boolean;
+
+// prepare argv values into argument, so that regex can parse as expected
+for (let j = 2; j < process.argv.length; j++) {
+  if (process.argv[j] === '--verbose') {
+    verboseEnabled = true;
+  } else if (process.argv[j] === '--remove') {
+    removePackages = true;
+  }
+}
+
+if (removePackages === false) {
+  addAltpackages();
+} else {
+  removeAltpackages();
+}
