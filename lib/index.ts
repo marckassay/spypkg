@@ -12,35 +12,35 @@ interface AltPackageConfig {
   }];
 }
 
-const genericBashDependencyFileName = 'dependency';
-const genericCmdDependencyFileName = 'dependency.cmd';
-const customBashDependencyFileName = 'x-dependency';
-const customCmdDependencyFileName = 'x-dependency.cmd';
-const genericAdaptorFileName = 'adaptor.js';
+const configFilename = 'package.json';
+const rootProperty = 'altpackage';
+const builtInSymbol = '*';
+
+const bashDependencyFileName = 'dependency';
+const cmdDependencyFileName = 'dependency.cmd';
+const adaptorFileName = 'adaptor.js';
+
+const configFilePath: string = join(process.cwd(), configFilename);
 
 /**
  * The location to the `out` folder. This is intended to reside in the project root directory.
  */
 let outDirPath: string;
 
-const libGenericBashDependency: string = join(__dirname, genericBashDependencyFileName);
-function outBashDependency(name: string = genericBashDependencyFileName): string {
+const libBashDependency: string = join(__dirname, bashDependencyFileName);
+function outBashDependency(name: string = bashDependencyFileName): string {
   return join(outDirPath, name);
 }
 
-const libGenericCmdDependency: string = join(__dirname, genericCmdDependencyFileName);
-function outCmdDependency(name: string = genericCmdDependencyFileName): string {
+const libCmdDependency: string = join(__dirname, cmdDependencyFileName);
+function outCmdDependency(name: string = cmdDependencyFileName): string {
   return join(outDirPath, name);
 }
 
-const libGenericAdaptor: string = join(__dirname, 'adaptor', genericAdaptorFileName);
-function outAdaptor(name: string = genericAdaptorFileName): string {
+const libAdaptor: string = join(__dirname, 'adaptor', adaptorFileName);
+function outAdaptor(name: string = adaptorFileName): string {
   return join(outDirPath, name);
 }
-
-const configFilename = 'package.json';
-const rootProperty = 'altpackage';
-const configFilePath: string = join(process.cwd(), configFilename);
 
 async function loadConfiguration() {
   try {
@@ -91,55 +91,45 @@ environment variable.
 * @param {string} adaptor the JS file where the command resolves to. Defaults to `adaptor.js`.
 */
 async function addCommandDependency(name: string, commandDirectoryPath: string, adaptor?: string) {
-  let bashDependencyValue: string;
-  let cmdDependencyValue: string;
-  let adaptorValue: string;
-
   // resolve commandDirectoryPath if its in a scriptblock.
   if (commandDirectoryPath.startsWith('{') || commandDirectoryPath.endsWith('}')) {
     commandDirectoryPath = await util.executeScriptBlock(commandDirectoryPath, 'Unable to execute the following scriptblock: ');
   }
-
   const commandPath: string = join(commandDirectoryPath, name);
 
-  if (!adaptor) {
-    await util.checkAndCreateACopy(libGenericBashDependency, outBashDependency(), true);
-    await util.checkAndCreateACopy(libGenericCmdDependency, outCmdDependency());
-    await util.checkAndCreateACopy(libGenericAdaptor, outAdaptor());
-
-    bashDependencyValue = outBashDependency();
-    cmdDependencyValue = outCmdDependency();
+  let adaptorSrc: string;
+  if (adaptor === undefined) {
+    adaptorSrc = libAdaptor;
+  } else if (adaptor === builtInSymbol) {
+    adaptorSrc = join(__dirname, 'adaptor', 'built-in', name + '-adaptor.js');
   } else {
-    if (adaptor === "{built-in}") {
-      adaptor = join(__dirname, 'adaptor', 'built-in', name + '-adaptor.js');
-    }
-
-    bashDependencyValue = outBashDependency(name + '-dependency');
-    cmdDependencyValue = outCmdDependency(name + '-dependency.cmd');
-    adaptorValue = outAdaptor(util.getFullname(adaptor));
-    const adaptorName = util.getFullname(adaptor);
-
-    const libCustomBashDependency: string = join(__dirname, customBashDependencyFileName);
-    const libCustomCmdDependency: string = join(__dirname, customCmdDependencyFileName);
-
-    // if custom adaptor is defined; then a custom set of files are needed.
-    await util.checkAndCreateACopy(libCustomBashDependency, bashDependencyValue, true);
-    await util.checkAndCreateACopy(libCustomCmdDependency, cmdDependencyValue);
-    await util.checkAndCreateACopy(adaptor, adaptorValue);
-
-    // replace tokens inside the bash and batch files.
-    // await util.replaceTokenInFile(bashDependencyValue, '{Outpath}', outDirPath);
-    await util.replaceTokenInFile(cmdDependencyValue, '{Outpath}', outDirPath);
-    // await util.replaceTokenInFile(bashDependencyValue, '{AdaptorPath}', adaptorName);
-    await util.replaceTokenInFile(cmdDependencyValue, '{AdaptorPath}', adaptorName);
+    adaptorSrc = join(process.cwd(), adaptor);
   }
 
-  if (verboseEnabled) {
-    console.log(`[altpackage] Adding '${name}' in: ${commandPath}`);
-    console.log(`[altpackage] Adding '${name}' in: ${commandPath}.cmd`);
-  }
-  await util.createSymlink(bashDependencyValue, commandPath);
-  await util.createSymlink(cmdDependencyValue, commandPath + '.cmd');
+  // copy files out of altpackage dist folder and into the client's "out" folder
+  await util.checkAndCreateACopy(libBashDependency, outBashDependency());
+  await util.checkAndCreateACopy(libCmdDependency, outCmdDependency());
+  await util.checkAndCreateACopy(adaptorSrc, outAdaptor(util.getFullname(adaptorSrc)));
+
+  await util.makeFileExecutable(outBashDependency());
+
+  await util.checkAndCreateACopy(outBashDependency(), commandPath)
+    .then((value) => {
+      if (verboseEnabled) {
+        if (value) {
+          console.log(`[altpackage] Adding: ${commandPath}`);
+        }
+      }
+    });
+
+  await util.checkAndCreateACopy(outCmdDependency(), commandPath + '.cmd')
+    .then((value) => {
+      if (verboseEnabled) {
+        if (value) {
+          console.log(`[altpackage] Adding: ${commandPath}.cwd`);
+        }
+      }
+    });
 }
 
 async function removeCommmandDependency(name: string, commandDirectoryPath: string) {
@@ -150,25 +140,37 @@ async function removeCommmandDependency(name: string, commandDirectoryPath: stri
 
   const commandPath: string = join(commandDirectoryPath, name);
 
-  if (verboseEnabled) {
-    console.log(`[altpackage] Removing '${name}' in: ${commandPath}`);
-    console.log(`[altpackage] Removing '${name}' in: ${commandPath}.cmd`);
-  }
-
   await util.doesFileExistAsync(commandPath)
     .then((value: boolean) => {
       if (value === true) {
-        util.removeSymlinks(commandPath, 'Unable to remove the file. Do you have permissions to access this file?: ');
+        util.removeFile(commandPath, 'Unable to remove the file. Do you have permissions to access this file?: ')
+          .then(() => {
+            if (verboseEnabled) {
+              console.log(`[altpackage] Removed: ${commandPath}`);
+            }
+          })
+      } else {
+        if (verboseEnabled) {
+          console.log(`[altpackage] File does not exist: ${commandPath}`);
+        }
       }
     });
 
   await util.doesFileExistAsync(commandPath + '.cmd')
     .then((value: boolean) => {
       if (value === true) {
-        util.removeSymlinks(commandPath + '.cmd', 'Unable to remove the file. Do you have permissions to access this file?: ');
+        util.removeFile(commandPath + '.cmd', 'Unable to remove the file. Do you have permissions to access this file?: ')
+          .then(() => {
+            if (verboseEnabled) {
+              console.log(`[altpackage] Removed: ${commandPath}.cmd`);
+            }
+          })
+      } else {
+        if (verboseEnabled) {
+          console.log(`[altpackage] File does not exist: ${commandPath}.cmd`);
+        }
       }
     });
-
   return Promise.resolve();
 }
 

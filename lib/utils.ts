@@ -60,15 +60,17 @@ export async function executeScriptBlock(scriptblock: string, err_message: strin
     });
 }
 
-export async function removeSymlinks(filePath: string, err_message: string): Promise<void> {
+export async function removeFile(filePath: string, err_message: string): Promise<void> {
   const remove = promisify(fs.unlink);
   // tslint:disable-next-line:no-bitwise
+  err_message;
+  /* TODO: disabling this for now; something with Promise<void> and thenable from caller
   if (!checkUsersPermissions(filePath, fs.constants.W_OK | fs.constants.R_OK)) {
-    console.error(err_message + filePath);
-    process.exit(1004);
-    return;
-  }
-
+      console.error(err_message + filePath);
+      process.exit(1004);
+      return;
+    }
+  */
   return await remove(filePath).catch(() => {
     console.error('Although permissions to remove file is correct, failure occurred.' +
       ' Is there another process accessing this file?: ' + filePath);
@@ -80,7 +82,7 @@ export async function removeSymlinks(filePath: string, err_message: string): Pro
 /**
  * Checks the destination for exisitence, if not existent it will create a copy from source.
  */
-export async function checkAndCreateACopy(source, destination, asExecutable = false): Promise<void> {
+export async function checkAndCreateACopy(source, destination): Promise<boolean> {
   const copy = promisify(fs.copyFile);
   return await doesFileExistAsync(destination)
     .then((value: boolean) => {
@@ -88,14 +90,10 @@ export async function checkAndCreateACopy(source, destination, asExecutable = fa
         // node.js ^10.12.0 is at least needed for mkdirSync's recursive option.
         const destinationDirectoryPath = path.dirname(destination);
         fs.mkdirSync(destinationDirectoryPath, { recursive: true });
-        return copy(source, destination)
-          .then(() => {
-            if (asExecutable) {
-              return makeFileExecutable(destination);
-            } else {
-              return Promise.resolve();
-            }
-          });
+        copy(source, destination);
+        return Promise.resolve<boolean>(true);
+      } else {
+        return Promise.resolve<boolean>(false);
       }
     });
 }
@@ -130,7 +128,7 @@ export async function replaceTokenInFile(file, tokenExpression, replacement): Pr
     await writeFileAsync(tmpfile, replaced_contents, 'utf8');
     await renameFileAsync(tmpfile, file);
   } catch (error) {
-    console.log('ERROR Calling symlink-utils.replaceTokenInFile(' + file + ',' + tokenExpression + ',' + replacement + ')');
+    console.log('ERROR Calling utils.replaceTokenInFile(' + file + ',' + tokenExpression + ',' + replacement + ')');
     console.log(error);
   }
 }
@@ -138,7 +136,7 @@ export async function replaceTokenInFile(file, tokenExpression, replacement): Pr
 export function getFullname(filePath): string {
   return path.basename(filePath);
 }
-
+/*
 function checkUsersPermissions(filePath, mode): boolean {
   try {
     fs.accessSync(filePath, mode);
@@ -147,8 +145,8 @@ function checkUsersPermissions(filePath, mode): boolean {
     return false;
   }
 }
-
-async function makeFileExecutable(filePath): Promise<void> {
+*/
+export async function makeFileExecutable(filePath): Promise<void> {
   const changeMode = promisify(fs.chmod);
   // octal '0111' is expressed as: 'a+x'
   return changeMode(filePath, '0111')

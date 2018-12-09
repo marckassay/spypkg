@@ -2,14 +2,15 @@
   "name": "altpackage",
   "version": "0.0.1",
   "description": "Alternative package solution",
-  "main": "lib/index.ts",
   "repository": "https://github.com/marckassay/altpackage.git",
   "author": "Marc Kassay <marckassay@gmail.com>",
   "license": "MIT",
   "private": true,
   "scripts": {
-    "install-harness": "node ./harness/deploy.js",
-    "add-altpackages": "node ./dist/index.js"
+    "build:altpackage": "node_modules/.bin/tsc -p tsconfig.json && node build/copy.js",
+    "build:harness": "node_modules/.bin/tsc -p harness/tsconfig.json",
+    "install-harness": "node harness/deploy.js",
+    "add-altpackages": "node dist/index.js"
   },
   "files": [
     "lib",
@@ -19,23 +20,14 @@
   ],
   "devDependencies": {
     "@types/fs-extra": "^5.0.4",
+    "@types/node": "^10.12.12",
     "fs-extra": "^7.0.1",
+    "tslint": "^5.11.0",
     "tslint-clean-code": "^0.2.9",
     "typescript": "^3.2.1"
   },
-  "dependencies": {
-    "@types/node": "^10.12.11"
-  },
+  "dependencies": {},
   "engines": {
     "node": ">=10.12.0"
-  },
-  "altpackage": {
-    "projectOutPath": ".\\out\\",
-    "packages": [
-      {
-        "name": "tslint",
-        "location": "{yarn global bin}"
-      }
-    ]
   }
 }

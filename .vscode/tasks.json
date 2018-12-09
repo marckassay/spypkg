@@ -4,49 +4,36 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Watch lib for TypeScript",
-      "type": "typescript",
-      "tsconfig": "altpackage\\tsconfig.json",
-      "option": "watch",
-      "problemMatcher": [
-        "$tsc-watch"
-      ]
-    },
-    {
-      "label": "Watch harness for TypeScript",
-      "type": "typescript",
-      "tsconfig": "altpackage\\harness\\tsconfig.json",
-      "option": "watch",
-      "problemMatcher": [
-        "$tsc-watch"
-      ]
-    },
-    {
-      "label": "Build lib for TypeScript",
-      "type": "typescript",
+      "label": "Build altpackage",
+      "type": "npm",
+      "script": "build:altpackage",
       "group": {
         "kind": "build",
         "isDefault": true
-      },
+      }
+    },
+    {
+      "label": "Build altpack-harness",
+      "type": "npm",
+      "script": "build:harness",
+      "group": "build"
+    },
+    {
+      "label": "Watch 'lib/' for TypeScript",
+      "type": "typescript",
       "tsconfig": "altpackage\\tsconfig.json",
+      "option": "watch",
       "problemMatcher": [
-        "$tsc"
+        "$tsc-watch"
       ]
     },
     {
-      "label": "Copy bash and batch files",
-      "type": "shell",
-      "group": "build",
-      "command": "xcopy 'lib\\dependency\\*.*' 'dist\\'",
-      "problemMatcher": []
-    },
-    {
-      "label": "Build harness for TypeScript",
+      "label": "Watch 'harness/' for TypeScript",
       "type": "typescript",
-      "group": "build",
       "tsconfig": "altpackage\\harness\\tsconfig.json",
+      "option": "watch",
       "problemMatcher": [
-        "$tsc"
+        "$tsc-watch"
       ]
     }
   ]
