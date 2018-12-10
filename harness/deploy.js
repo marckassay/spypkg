@@ -42,55 +42,85 @@ var fs = require('fs-extra');
 var exec = util_1.promisify(child.exec);
 function deploy() {
     return __awaiter(this, void 0, void 0, function () {
-        var shellExe, npmExe, command, err_1;
+        var shellExe, npmExe, relativeHarnessSrcPath_1, relativeHarnessDestinationPath_1, createSymlink, command, toProceed, err_1;
+        var _this = this;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 4, , 5]);
+                    _a.trys.push([0, 5, , 6]);
                     shellExe = (process.platform === 'win32') ? 'cmd /c' : '';
-                    npmExe = (RegExp(/.*([Y|y]arn[\\|\/]bin).*/gm).test(process.env.PATH)) ? 'yarn' : 'npm';
-                    return [4 /*yield*/, fs.ensureSymlink('.\\harness\\altpack-harness\\', '..\\altpack-harness\\')];
+                    npmExe = (process.env.PATH.search('Yarn')) ? 'yarn' : 'npm';
+                    relativeHarnessSrcPath_1 = path.resolve('harness/altpack-harness/').normalize();
+                    relativeHarnessDestinationPath_1 = path.resolve('../altpack-harness/').normalize();
+                    createSymlink = function () { return __awaiter(_this, void 0, void 0, function () {
+                        var err_2;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    _a.trys.push([0, 2, , 3]);
+                                    return [4 /*yield*/, fs.ensureSymlink(relativeHarnessSrcPath_1, relativeHarnessDestinationPath_1, 'dir')];
+                                case 1:
+                                    _a.sent();
+                                    console.log('[altpackage] Created filesystem symlink from: ' + relativeHarnessSrcPath_1 + ', to: ' + relativeHarnessDestinationPath_1);
+                                    return [3 /*break*/, 3];
+                                case 2:
+                                    err_2 = _a.sent();
+                                    console.error('[altpackage]' + err_2);
+                                    return [3 /*break*/, 3];
+                                case 3: return [2 /*return*/];
+                            }
+                        });
+                    }); };
+                    return [4 /*yield*/, createSymlink()];
                 case 1:
                     _a.sent();
-                    console.log('Deployed symlink for test harness: ' + path.resolve('..\\altpack-harness\\'));
+                    console.log("[altpackage] step 1/2 - Registering module for '" + npmExe + "' for linking.");
                     command = (shellExe + ' ' + npmExe + ' link').trimLeft();
+                    console.log('[altpackage] Executing: ' + command);
                     return [4 /*yield*/, exec(command)
                             .then(function (onfulfilled) {
                             if (onfulfilled.stdout) {
                                 console.log(onfulfilled.stdout);
+                                return true;
                             }
                             if (onfulfilled.stderr) {
                                 console.log(onfulfilled.stderr);
+                                return false;
                             }
                         })
                             .catch(function (reason) {
                             console.log(reason);
+                            return false;
                         })];
                 case 2:
-                    _a.sent();
-                    process.chdir(path.resolve('..\\altpack-harness\\'));
-                    console.log("Changed directory to: " + process.cwd());
+                    toProceed = _a.sent();
+                    if (!toProceed) return [3 /*break*/, 4];
+                    process.chdir(relativeHarnessDestinationPath_1);
+                    console.log("[altpackage] Changed directory to: " + process.cwd());
+                    console.log('[altpackage] step 2/2 - Appling new link to harness directory.');
                     // ...now execute the link command again specifiying 'altpackage'...
                     command = (shellExe + ' ' + npmExe + ' link altpackage --dev').trimLeft();
-                    console.log('Executing: ' + command);
+                    console.log('[altpackage] Executing: ' + command);
                     return [4 /*yield*/, exec(command)
                             .then(function (onfulfilled) {
                             if (onfulfilled.stdout) {
-                                console.log(onfulfilled.stdout);
+                                // console.log(onfulfilled.stdout);
+                                console.log('[altpackage] Test harness deployed successfully.');
                             }
                             if (onfulfilled.stderr) {
-                                console.log(onfulfilled.stderr);
+                                console.log('[altpackage] ' + onfulfilled.stderr);
                             }
                         })
                             .catch(function (reason) {
-                            console.log(reason);
+                            console.log('[altpackage] ' + reason);
                         })];
                 case 3: return [2 /*return*/, _a.sent()];
-                case 4:
+                case 4: return [3 /*break*/, 6];
+                case 5:
                     err_1 = _a.sent();
-                    console.error(err_1);
-                    return [3 /*break*/, 5];
-                case 5: return [2 /*return*/];
+                    console.error('[altpackage] ' + err_1);
+                    return [3 /*break*/, 6];
+                case 6: return [2 /*return*/];
             }
         });
     });
