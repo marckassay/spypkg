@@ -11,8 +11,9 @@ export async function deploy() {
     // via '[yarn|npm] run' command but not directly using Node (node -e "console.log(...)")
     // const npmExe: string = (RegExp(/.*([Y|y]arn.bin).*/).test(process.env.PATH)) ? 'yarn' : 'npm';
     const npmExe: string = (process.env.PATH.search('Yarn')) ? 'yarn' : 'npm';
-    const relativeHarnessSrcPath = path.resolve('harness/altpack-harness/').normalize();
-    const relativeHarnessDestinationPath = path.resolve('../altpack-harness/').normalize();
+    // keep relative paths as-is to avoid issues with linux distros...
+    const relativeHarnessSrcPath = 'harness/altpack-harness';
+    const relativeHarnessDestinationPath = '../altpack-harness';
 
     // Create filesystem symlink..
     const createSymlink = async () => {
@@ -20,7 +21,7 @@ export async function deploy() {
         await fs.ensureSymlink(relativeHarnessSrcPath, relativeHarnessDestinationPath, 'dir');
         console.log('[altpackage] Created filesystem symlink from: ' + relativeHarnessSrcPath + ', to: ' + relativeHarnessDestinationPath);
       } catch (err) {
-        console.error('[altpackage]' + err);
+        console.error('[altpackage] ' + err);
       }
     }
     await createSymlink();

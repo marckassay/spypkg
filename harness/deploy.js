@@ -36,7 +36,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var child = require("child_process");
-var path = require("path");
 var util_1 = require("util");
 var fs = require('fs-extra');
 var exec = util_1.promisify(child.exec);
@@ -50,8 +49,8 @@ function deploy() {
                     _a.trys.push([0, 5, , 6]);
                     shellExe = (process.platform === 'win32') ? 'cmd /c' : '';
                     npmExe = (process.env.PATH.search('Yarn')) ? 'yarn' : 'npm';
-                    relativeHarnessSrcPath_1 = path.resolve('harness/altpack-harness/').normalize();
-                    relativeHarnessDestinationPath_1 = path.resolve('../altpack-harness/').normalize();
+                    relativeHarnessSrcPath_1 = 'harness/altpack-harness';
+                    relativeHarnessDestinationPath_1 = '../altpack-harness';
                     createSymlink = function () { return __awaiter(_this, void 0, void 0, function () {
                         var err_2;
                         return __generator(this, function (_a) {
@@ -65,7 +64,7 @@ function deploy() {
                                     return [3 /*break*/, 3];
                                 case 2:
                                     err_2 = _a.sent();
-                                    console.error('[altpackage]' + err_2);
+                                    console.error('[altpackage] ' + err_2);
                                     return [3 /*break*/, 3];
                                 case 3: return [2 /*return*/];
                             }

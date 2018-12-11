@@ -7,11 +7,11 @@
   "author": "Marc Kassay <marckassay@gmail.com>",
   "private": true,
   "scripts": {
-    "add-altpackages": "node node_modules/altpackage/dist/index.js",
-    "remove-altpackages": "node node_modules/altpackage/dist/index.js --remove"
+    "add:altpacks": "node node_modules/altpackage/dist/index.js",
+    "remove:altpacks": "node node_modules/altpackage/dist/index.js --remove"
   },
   "altpackage": {
-    "projectOutPath": "out/",
+    "projectOutPath": "out",
     "packages": [
       {
         "name": "ionic",
@@ -23,7 +23,7 @@
       },
       {
         "name": "npm",
-        "location": "C:\\Program Files\\nodejs",
+        "location": "{yarn global bin}",
         "adaptor": "*"
       }
     ]

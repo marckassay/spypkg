@@ -9,8 +9,7 @@
   "scripts": {
     "build:altpackage": "node_modules/.bin/tsc -p tsconfig.json && node build/copy.js",
     "build:harness": "node_modules/.bin/tsc -p harness/tsconfig.json",
-    "install-harness": "node harness/deploy.js",
-    "add-altpackages": "node dist/index.js"
+    "install:harness": "node harness/deploy.js"
   },
   "files": [
     "lib",
