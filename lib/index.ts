@@ -14,7 +14,7 @@ interface AltPackageConfig {
 
 const configFilename = 'package.json';
 const rootProperty = 'altpackage';
-const builtInSymbol = '*';
+const builtInSymbol = '*/';
 
 const bashDependencyFileName = 'dependency';
 const cmdDependencyFileName = 'dependency.cmd';
@@ -100,7 +100,7 @@ async function addCommandDependency(name: string, commandDirectoryPath: string, 
   let adaptorSrc: string;
   if (adaptor === undefined) {
     adaptorSrc = libAdaptor;
-  } else if (adaptor === builtInSymbol) {
+  } else if (adaptor.startsWith(builtInSymbol)) {
     adaptorSrc = join(__dirname, 'adaptor', 'built-in', name + '-adaptor.js');
   } else {
     adaptorSrc = join(process.cwd(), adaptor);

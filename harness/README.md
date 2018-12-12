@@ -1,17 +1,17 @@
-# altpack-harness
+# spypkg-harness
 
-This folder (harness) of `altpackage` is to deploy the module's test harness in the same directory as where it resides. This is ideal for local development of `altpackage`.
+This folder (harness) of `spypkg` is to deploy the module's test harness in the same directory as where it resides. This is ideal for local development of `spypkg`.
 
-To deploy this harness as intended, clone the [repository](https://github.com/marckassay/altpackage.git) and using a CLI execute the following command in the root directory using a node package manager:
+To deploy this harness as intended, clone the [repository](https://github.com/marckassay/spypkg.git) and using a CLI execute the following command in the root directory using a node package manager:
 
 ```shell
 [npm|yarn|pnpm] run install-harness
 ```
 
-This will install the test harness in the same directory as where `altpackage` resides. Now this test harness acts like any other module that installed `altpackage`. So change the CLI directory to the `altpack-harness` directory and executed the following if you want to use the current configuration:
+This will install the test harness in the same directory as where `spypkg` resides. This test harness acts like any other host project that installed `spypkg`. So change the CLI directory to the `spypkg-harness` directory and executed the following if you want to use the current configuration:
 
 ```shell
-[npm|yarn|pnpm] run add-altpackages
+[npm|yarn|pnpm] run add-spypkgs
 ```
 
 The current configuration is in it's `package.json` file. Below shows relevant information for this this file:
@@ -21,10 +21,10 @@ The current configuration is in it's `package.json` file. Below shows relevant i
   ...
   "private": true,
   "scripts": {
-    "add-altpackages": "node ./node_modules/altpackage/dist/index.js",
-    "remove-altpackages": "node ./node_modules/altpackage/dist/index.js -remove"
+    "add-spypkgs": "node ./node_modules/spypkg/dist/index.js",
+    "remove-spypkgs": "node ./node_modules/spypkg/dist/index.js -remove"
   },
-  "altpackage": {
+  "spypkg": {
     "projectOutPath": ".\\out\\",
     "packages": [
       {

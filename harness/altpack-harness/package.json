@@ -1,16 +1,16 @@
 {
-  "name": "altpack-harness",
+  "name": "spypkg-harness",
   "version": "0.0.1",
   "license": "MIT",
-  "repository": "https://github.com/marckassay/altpackage.git",
-  "description": "Test harness for 'altpackage'",
+  "repository": "https://github.com/marckassay/spypkg.git",
+  "description": "Test harness for 'spypkg'",
   "author": "Marc Kassay <marckassay@gmail.com>",
   "private": true,
   "scripts": {
-    "add:altpacks": "node node_modules/altpackage/dist/index.js",
-    "remove:altpacks": "node node_modules/altpackage/dist/index.js --remove"
+    "add:spies": "node node_modules/spypkg/dist/index.js",
+    "remove:spies": "node node_modules/spypkg/dist/index.js --remove"
   },
-  "altpackage": {
+  "spypkg": {
     "projectOutPath": "out",
     "packages": [
       {
@@ -24,7 +24,7 @@
       {
         "name": "npm",
         "location": "{yarn global bin}",
-        "adaptor": "*"
+        "adaptor": "*/npm-adaptor.js"
       }
     ]
   }

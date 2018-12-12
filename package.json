@@ -1,13 +1,13 @@
 {
-  "name": "altpackage",
+  "name": "spypkg",
   "version": "0.0.1",
-  "description": "Alternative package solution",
-  "repository": "https://github.com/marckassay/altpackage.git",
+  "description": "spypkg (spy package) to spy on global packages.",
+  "repository": "https://github.com/marckassay/spypkg.git",
   "author": "Marc Kassay <marckassay@gmail.com>",
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build:altpackage": "node_modules/.bin/tsc -p tsconfig.json && node build/copy.js",
+    "build:spypkg": "node_modules/.bin/tsc -p tsconfig.json && node build/copy.js",
     "build:harness": "node_modules/.bin/tsc -p harness/tsconfig.json",
     "install:harness": "node harness/deploy.js"
   },
