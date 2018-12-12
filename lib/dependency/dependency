@@ -1,17 +1,17 @@
 #!/bin/sh
 
-# altpackage has generated this file
+# spypkg has generated this file
 currentdir=$PWD
 filename=$(basename "$0")
 args="$@"
-outpath=$(node -pe "JSON.parse(process.argv[1]).altpackage.projectOutPath" "$(cat $currentdir/package.json)")
+outpath=$(node -pe "JSON.parse(process.argv[1]).spypkg.projectOutPath" "$(cat $currentdir/package.json)")
 adaptorfullpath=$(realpath $currentdir/$outpath/$filename-adaptor.js)
 
 if [ ! -f "$adaptorfullpath" ]; then
   adaptorfullpath=$(realpath $currentdir/$outpath/adaptor.js)
 fi
 
-echo "[altpackage] Executing: node " "$adaptorfullpath" "$filename $@"
+echo "[spypkg] Executing: node " "$adaptorfullpath" "$filename $@"
 node "$adaptorfullpath" "$filename $@"
 
 ret=$?

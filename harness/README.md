@@ -21,11 +21,11 @@ The current configuration is in it's `package.json` file. Below shows relevant i
   ...
   "private": true,
   "scripts": {
-    "add-spypkgs": "node ./node_modules/spypkg/dist/index.js",
-    "remove-spypkgs": "node ./node_modules/spypkg/dist/index.js -remove"
+    "add-spypkgs": "node node_modules/spypkg/dist/index.js",
+    "remove-spypkgs": "node node_modules/spypkg/dist/index.js -remove"
   },
   "spypkg": {
-    "projectOutPath": ".\\out\\",
+    "projectOutPath": "out",
     "packages": [
       {
         "name": "ionic",
@@ -38,7 +38,7 @@ The current configuration is in it's `package.json` file. Below shows relevant i
       {
         "name": "npm",
         "location": "C:\\Program Files\\nodejs",
-        "adaptor": "{built-in}"
+        "adaptor": "*/npm-adaptor.js"
       }
     ]
   }

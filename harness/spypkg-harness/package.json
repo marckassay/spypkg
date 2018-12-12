@@ -12,7 +12,7 @@
   },
   "spypkg": {
     "projectOutPath": "out",
-    "packages": [
+    "spies": [
       {
         "name": "ionic",
         "location": "{yarn global bin}"

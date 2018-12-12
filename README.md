@@ -66,6 +66,7 @@ This example is very similar to the 'yarn in lieu of npm' example. The only diff
 Add the convenience commands as in the above example if you wish. And add the required `spypkg` property:
 
 ```json
+{
  "spypkg": {
    "projectOutPath": "out",
    "spies": [
@@ -75,6 +76,7 @@ Add the convenience commands as in the above example if you wish. And add the re
      }
    ]
  }
+}
 ```
 
 * See `Configuration` section below for more about configuring.

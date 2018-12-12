@@ -3,7 +3,7 @@
 import * as util from './utils';
 import { join } from 'path';
 
-interface AltPackageConfig {
+interface SpypkgConfig {
   projectOutPath: string;
   packages: [{
     name: string,
@@ -13,7 +13,7 @@ interface AltPackageConfig {
 }
 
 const configFilename = 'package.json';
-const rootProperty = 'altpackage';
+const rootProperty = 'spypkg';
 const builtInSymbol = '*/';
 
 const bashDependencyFileName = 'dependency';
@@ -62,8 +62,8 @@ async function loadConfiguration() {
  *
  * This is developed to work on POSIX and Windows.
  */
-async function addAltpackages() {
-  let config: AltPackageConfig = await loadConfiguration();
+async function addSpypkgs() {
+  let config: SpypkgConfig = await loadConfiguration();
   outDirPath = config.projectOutPath;
 
   for (const dependency of config.packages) {
@@ -72,8 +72,8 @@ async function addAltpackages() {
   }
 }
 
-async function removeAltpackages() {
-  let config: AltPackageConfig = await loadConfiguration();
+async function removeSpypkgs() {
+  let config: SpypkgConfig = await loadConfiguration();
   outDirPath = config.projectOutPath;
 
   for (const dependency of config.packages) {
@@ -106,7 +106,7 @@ async function addCommandDependency(name: string, commandDirectoryPath: string, 
     adaptorSrc = join(process.cwd(), adaptor);
   }
 
-  // copy files out of altpackage dist folder and into the client's "out" folder
+  // copy files out of spypkg dist folder and into the client's "out" folder
   await util.checkAndCreateACopy(libBashDependency, outBashDependency());
   await util.checkAndCreateACopy(libCmdDependency, outCmdDependency());
   await util.checkAndCreateACopy(adaptorSrc, outAdaptor(util.getFullname(adaptorSrc)));
@@ -117,7 +117,7 @@ async function addCommandDependency(name: string, commandDirectoryPath: string, 
     .then((value) => {
       if (verboseEnabled) {
         if (value) {
-          console.log(`[altpackage] Adding: ${commandPath}`);
+          console.log(`[spypkg] Adding: ${commandPath}`);
         }
       }
     });
@@ -126,7 +126,7 @@ async function addCommandDependency(name: string, commandDirectoryPath: string, 
     .then((value) => {
       if (verboseEnabled) {
         if (value) {
-          console.log(`[altpackage] Adding: ${commandPath}.cwd`);
+          console.log(`[spypkg] Adding: ${commandPath}.cwd`);
         }
       }
     });
@@ -146,12 +146,12 @@ async function removeCommmandDependency(name: string, commandDirectoryPath: stri
         util.removeFile(commandPath, 'Unable to remove the file. Do you have permissions to access this file?: ')
           .then(() => {
             if (verboseEnabled) {
-              console.log(`[altpackage] Removed: ${commandPath}`);
+              console.log(`[spypkg] Removed: ${commandPath}`);
             }
           })
       } else {
         if (verboseEnabled) {
-          console.log(`[altpackage] File does not exist: ${commandPath}`);
+          console.log(`[spypkg] File does not exist: ${commandPath}`);
         }
       }
     });
@@ -162,12 +162,12 @@ async function removeCommmandDependency(name: string, commandDirectoryPath: stri
         util.removeFile(commandPath + '.cmd', 'Unable to remove the file. Do you have permissions to access this file?: ')
           .then(() => {
             if (verboseEnabled) {
-              console.log(`[altpackage] Removed: ${commandPath}.cmd`);
+              console.log(`[spypkg] Removed: ${commandPath}.cmd`);
             }
           })
       } else {
         if (verboseEnabled) {
-          console.log(`[altpackage] File does not exist: ${commandPath}.cmd`);
+          console.log(`[spypkg] File does not exist: ${commandPath}.cmd`);
         }
       }
     });
@@ -187,7 +187,7 @@ for (let j = 0; j < process.argv.length; j++) {
 }
 
 if (removePackages === false) {
-  addAltpackages();
+  addSpypkgs();
 } else {
-  removeAltpackages();
+  removeSpypkgs();
 }

@@ -1,10 +1,10 @@
 {
   "folders": [
     {
-      "path": ".\\..\\altpackage"
+      "path": ".\\..\\spypkg"
     },
     {
-      "path": ".\\..\\altpack-harness"
+      "path": ".\\..\\spypkg-harness"
     }
   ],
   "settings": {

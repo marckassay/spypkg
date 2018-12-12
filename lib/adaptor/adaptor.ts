@@ -10,7 +10,7 @@ const opts = Object.assign({}, process.env);
 opts.cwd = process.cwd();
 opts.stdio = 'inherit';
 
-console.log('[altpackage] Executing: ' + command + ' ' + process.argv.slice(3));
+console.log('[spypkg] Executing: ' + command + ' ' + process.argv.slice(3));
 
 const result = child.spawnSync(command, process.argv.slice(3), opts);
 if (result.error || result.status !== 0) {

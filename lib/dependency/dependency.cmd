@@ -1,4 +1,4 @@
-:: altpackage has generated this file
+:: spypkg has generated this file
 @ECHO OFF
 @SETLOCAL
 SETLOCAL enableDelayedExpansion
@@ -26,7 +26,7 @@ IF NOT EXIST %$AdaptorFullPath% (
   SET $AdaptorFullPath=%$CurrentDir%\%$Outpath%\adaptor.js
 )
 
-ECHO [altpackage] Executing: node %$AdaptorFullPath% %$Args%
+ECHO [spypkg] Executing: node %$AdaptorFullPath% %$Args%
 node %$AdaptorFullPath% %$Args%
 
 ENDLOCAL

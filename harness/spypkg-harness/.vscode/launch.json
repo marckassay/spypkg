@@ -7,14 +7,14 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Debug index.js - add-packages",
-            "program": "${workspaceFolder}\\..\\altpackage\\dist\\index.js"
+            "name": "Debug index.js - add-spies",
+            "program": "${workspaceFolder}\\dist\\index.js"
         },
         {
             "type": "node",
             "request": "launch",
-            "name": "Debug index.js - remove-packages",
-            "program": "${workspaceFolder}\\dist\\index.js"
+            "name": "Debug index.js - remove-spies",
+            "program": "${workspaceFolder}\\dist\\index.js --remove"
         },
         {
             "type": "node",
@@ -28,7 +28,7 @@
             "request": "launch",
             "name": "Debug npm-adaptor.js",
             "sourceMaps": true,
-            "program": "${workspaceFolder}\\dist\\adaptor\\built-in\\npm_adaptor.js",
+            "program": "${workspaceFolder}\\dist\\adaptor\\built-in\\npm-adaptor.js",
             "args": [
                 "npm",
                 "install",

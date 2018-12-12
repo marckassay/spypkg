@@ -4,16 +4,16 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build altpackage",
+      "label": "Build spypkg",
       "type": "npm",
-      "script": "build:altpackage",
+      "script": "build:spypkg",
       "group": {
         "kind": "build",
         "isDefault": true
       }
     },
     {
-      "label": "Build altpack-harness",
+      "label": "Build spypkg-harness",
       "type": "npm",
       "script": "build:harness",
       "group": "build"
@@ -21,7 +21,7 @@
     {
       "label": "Watch 'lib/' for TypeScript",
       "type": "typescript",
-      "tsconfig": "altpackage\\tsconfig.json",
+      "tsconfig": "spypkg\\tsconfig.json",
       "option": "watch",
       "problemMatcher": [
         "$tsc-watch"
@@ -30,7 +30,7 @@
     {
       "label": "Watch 'harness/' for TypeScript",
       "type": "typescript",
-      "tsconfig": "altpackage\\harness\\tsconfig.json",
+      "tsconfig": "spypkg\\harness\\tsconfig.json",
       "option": "watch",
       "problemMatcher": [
         "$tsc-watch"

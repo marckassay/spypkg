@@ -106,7 +106,7 @@ function getIsoMorphedExpression(npmex: NPMExpressionShape): string {
 
 const exe = async (npmExpression, yarnExpression) => {
   if (verboseEnabled) {
-    console.log('The npm expression below has been transformed into the followed yarn expression:');
+    console.log('[spypkg] The npm expression below has been transformed into the followed yarn expression:');
     console.log(npmExpression);
     console.log(yarnExpression);
   }
