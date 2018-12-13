@@ -1,0 +1,10 @@
+#!/bin/sh
+
+currentdir=$PWD
+filename=$(basename "$0")
+args="$@"
+
+expression=$(realpath $currentdir/node_modules/.bin/$filename)
+
+echo "[spypkg] *Would be* executing: $expression $args" 
+

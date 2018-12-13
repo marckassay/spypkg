@@ -9,7 +9,7 @@
   "scripts": {
     "build:spypkg": "node_modules/.bin/tsc -p tsconfig.json && node build/copy.js",
     "build:harness": "node_modules/.bin/tsc -p harness/tsconfig.json",
-    "install:harness": "node harness/deploy.js"
+    "install:harness": "node build/harness/deploy.js"
   },
   "files": [
     "lib",

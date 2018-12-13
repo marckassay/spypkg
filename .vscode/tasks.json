@@ -26,6 +26,15 @@
       "problemMatcher": [
         "$tsc-watch"
       ]
+    },
+    {
+      "label": "Watch 'harness' for TypeScript",
+      "type": "typescript",
+      "tsconfig": "harness\\tsconfig.json",
+      "option": "watch",
+      "problemMatcher": [
+        "$tsc-watch"
+      ]
     }
   ]
 }

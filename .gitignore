@@ -20,7 +20,6 @@ npm-debug.log*
 .versions/
 coverage/
 www/
-node_modules/
 out/
 dist/
 tmp/
@@ -37,3 +36,9 @@ UserInterfaceState.xcuserstate
 
 # Omit in favor of yarn.lock
 # package-lock.json
+
+node_modules/
+
+build/harness/deploy.js.map
+harness/deploy.js
+harness/deploy.js.map
