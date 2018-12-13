@@ -11,7 +11,7 @@ To deploy this harness as intended, clone the [repository](https://github.com/ma
 This will install the test harness in the same directory as where `spypkg` resides. This test harness acts like any other host project that installed `spypkg`. So change the CLI directory to the `spypkg-harness` directory and executed the following if you want to use the current configuration:
 
 ```shell
-[npm|yarn|pnpm] run add-spypkgs
+[npm|yarn|pnpm] run add-spies
 ```
 
 The current configuration is in it's `package.json` file. Below shows relevant information for this this file:
@@ -21,12 +21,12 @@ The current configuration is in it's `package.json` file. Below shows relevant i
   ...
   "private": true,
   "scripts": {
-    "add-spypkgs": "node node_modules/spypkg/dist/index.js",
-    "remove-spypkgs": "node node_modules/spypkg/dist/index.js -remove"
+    "add-spies": "node node_modules/spypkg/dist/index.js",
+    "remove-spies": "node node_modules/spypkg/dist/index.js -remove"
   },
   "spypkg": {
     "projectOutPath": "out",
-    "packages": [
+    "spies": [
       {
         "name": "ionic",
         "location": "{yarn global bin}"

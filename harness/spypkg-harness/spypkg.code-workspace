@@ -9,5 +9,82 @@
   ],
   "settings": {
     "typescript.tsdk": "node_modules\\typescript\\lib"
+  },
+  "launch": {
+    "configurations": [
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "Debug index.ts - add-spies",
+        "program": "${workspaceFolder:spypkg}/lib/index.ts",
+        "sourceMaps": true,
+        "smartStep": true,
+        "outFiles": [
+          "${workspaceFolder:spypkg}/dist/**/*.js"
+        ],
+        "skipFiles": [
+          "<node_internals>/**/*.js"
+        ]
+      },
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "Debug index.ts - remove-spies",
+        "program": "${workspaceFolder:spypkg}/lib/index.ts",
+        "sourceMaps": true,
+        "smartStep": true,
+        "outFiles": [
+          "${workspaceFolder:spypkg}/dist/**/*.js"
+        ],
+        "skipFiles": [
+          "<node_internals>/**/*.js"
+        ],
+        "args": [
+          "--remove"
+        ]
+      },
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "Debug adaptor.ts",
+        "program": "${workspaceFolder:spypkg}/lib/adaptor/adaptor.ts",
+        "sourceMaps": true,
+        "smartStep": true,
+        "cwd": "${workspaceFolder:spypkg}",
+        "outFiles": [
+          "${workspaceFolder:spypkg}/dist/**/*.js"
+        ],
+        "skipFiles": [
+          "<node_internals>/**/*.js"
+        ],
+        "args": [
+          "semver",
+          "1.2.3",
+          "-i",
+          "prerelease",
+          "--preid",
+          "beta"
+        ]
+      },
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "Debug npm-adaptor.ts",
+        "program": "${workspaceFolder:spypkg}/lib/adaptor/built-in/npm-adaptor.ts",
+        "sourceMaps": true,
+        "smartStep": true,
+        "outFiles": [
+          "${workspaceFolder:spypkg}/dist/**/*.js"
+        ],
+        "skipFiles": [
+          "<node_internals>/**/*.js"
+        ],
+        "args": [
+          "npm",
+          "install",
+          "sots"
+        ]
+      }
+    ]
   }
 }

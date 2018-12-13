@@ -8,8 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function () { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function () { return this; }), g;
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
@@ -51,27 +51,25 @@ function deploy() {
                     npmExe = (process.env.PATH.search('Yarn')) ? 'yarn' : 'npm';
                     relativeHarnessSrcPath_1 = 'harness/spypkg-harness';
                     relativeHarnessDestinationPath_1 = '../spypkg-harness';
-                    createSymlink = function () {
-                        return __awaiter(_this, void 0, void 0, function () {
-                            var err_2;
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0:
-                                        _a.trys.push([0, 2, , 3]);
-                                        return [4 /*yield*/, fs.ensureSymlink(relativeHarnessSrcPath_1, relativeHarnessDestinationPath_1, 'dir')];
-                                    case 1:
-                                        _a.sent();
-                                        console.log('[spypkg] Created filesystem symlink from: ' + relativeHarnessSrcPath_1 + ', to: ' + relativeHarnessDestinationPath_1);
-                                        return [3 /*break*/, 3];
-                                    case 2:
-                                        err_2 = _a.sent();
-                                        console.error('[spypkg] ' + err_2);
-                                        return [3 /*break*/, 3];
-                                    case 3: return [2 /*return*/];
-                                }
-                            });
+                    createSymlink = function () { return __awaiter(_this, void 0, void 0, function () {
+                        var err_2;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    _a.trys.push([0, 2, , 3]);
+                                    return [4 /*yield*/, fs.ensureSymlink(relativeHarnessSrcPath_1, relativeHarnessDestinationPath_1, 'dir')];
+                                case 1:
+                                    _a.sent();
+                                    console.log('[spypkg] Created filesystem symlink from: ' + relativeHarnessSrcPath_1 + ', to: ' + relativeHarnessDestinationPath_1);
+                                    return [3 /*break*/, 3];
+                                case 2:
+                                    err_2 = _a.sent();
+                                    console.error('[spypkg] ' + err_2);
+                                    return [3 /*break*/, 3];
+                                case 3: return [2 /*return*/];
+                            }
                         });
-                    };
+                    }); };
                     return [4 /*yield*/, createSymlink()];
                 case 1:
                     _a.sent();
@@ -79,7 +77,7 @@ function deploy() {
                     command = (shellExe + ' ' + npmExe + ' link').trimLeft();
                     console.log('[spypkg] Executing: ' + command);
                     return [4 /*yield*/, exec(command)
-                        .then(function (onfulfilled) {
+                            .then(function (onfulfilled) {
                             if (onfulfilled.stdout) {
                                 console.log(onfulfilled.stdout);
                                 return true;
@@ -89,7 +87,7 @@ function deploy() {
                                 return false;
                             }
                         })
-                        .catch(function (reason) {
+                            .catch(function (reason) {
                             console.log(reason);
                             return false;
                         })];
@@ -103,7 +101,7 @@ function deploy() {
                     command = (shellExe + ' ' + npmExe + ' link spypkg --dev').trimLeft();
                     console.log('[spypkg] Executing: ' + command);
                     return [4 /*yield*/, exec(command)
-                        .then(function (onfulfilled) {
+                            .then(function (onfulfilled) {
                             if (onfulfilled.stdout) {
                                 // console.log(onfulfilled.stdout);
                                 console.log('[spypkg] Test harness deployed successfully.');
@@ -112,7 +110,7 @@ function deploy() {
                                 console.log('[spypkg] ' + onfulfilled.stderr);
                             }
                         })
-                        .catch(function (reason) {
+                            .catch(function (reason) {
                             console.log('[spypkg] ' + reason);
                         })];
                 case 3: return [2 /*return*/, _a.sent()];

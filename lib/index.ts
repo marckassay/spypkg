@@ -5,7 +5,7 @@ import { join } from 'path';
 
 interface SpypkgConfig {
   projectOutPath: string;
-  packages: [{
+  spies: [{
     name: string,
     location: string,
     adaptor?: string
@@ -62,22 +62,22 @@ async function loadConfiguration() {
  *
  * This is developed to work on POSIX and Windows.
  */
-async function addSpypkgs() {
+async function addspies() {
   let config: SpypkgConfig = await loadConfiguration();
   outDirPath = config.projectOutPath;
 
-  for (const dependency of config.packages) {
-    await removeCommmandDependency(dependency.name, dependency.location);
-    await addCommandDependency(dependency.name, dependency.location, dependency.adaptor);
+  for (const spy of config.spies) {
+    await removeCommmandDependency(spy.name, spy.location);
+    await addCommandDependency(spy.name, spy.location, spy.adaptor);
   }
 }
 
-async function removeSpypkgs() {
+async function removespies() {
   let config: SpypkgConfig = await loadConfiguration();
   outDirPath = config.projectOutPath;
 
-  for (const dependency of config.packages) {
-    await removeCommmandDependency(dependency.name, dependency.location);
+  for (const spy of config.spies) {
+    await removeCommmandDependency(spy.name, spy.location);
   }
 }
 
@@ -106,7 +106,7 @@ async function addCommandDependency(name: string, commandDirectoryPath: string, 
     adaptorSrc = join(process.cwd(), adaptor);
   }
 
-  // copy files out of spypkg dist folder and into the client's "out" folder
+  // copy files out of spypkg's dist folder and into the client's "out" folder
   await util.checkAndCreateACopy(libBashDependency, outBashDependency());
   await util.checkAndCreateACopy(libCmdDependency, outCmdDependency());
   await util.checkAndCreateACopy(adaptorSrc, outAdaptor(util.getFullname(adaptorSrc)));
@@ -187,7 +187,7 @@ for (let j = 0; j < process.argv.length; j++) {
 }
 
 if (removePackages === false) {
-  addSpypkgs();
+  addspies();
 } else {
-  removeSpypkgs();
+  removespies();
 }

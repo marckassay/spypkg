@@ -1,5 +1,4 @@
 import * as child from 'child_process';
-import * as path from 'path';
 import { promisify } from 'util';
 const fs = require('fs-extra');
 const exec = promisify(child.exec);

@@ -3,18 +3,44 @@
 import * as child from 'child_process';
 import * as path from 'path';
 
+import { promisify } from 'util';
+const exec = promisify(child.exec);
+
+const exe = async (expression) => {
+  if (verboseEnabled) {
+    console.log('[spypkg] Executing: ' + expression);
+  }
+
+  return await exec(expression)
+    .then((onfulfilled) => {
+      if (onfulfilled.stdout) {
+        console.log(onfulfilled.stdout);
+      }
+      if (onfulfilled.stderr) {
+        console.log(onfulfilled.stderr);
+      }
+    })
+    .catch((reason) => {
+      console.log(reason);
+    });
+};
+
+let verboseEnabled: boolean;
+let argument: string = '';
+
 const ext = process.platform === 'win32' ? '.cmd' : '';
 const command = path.join(process.cwd(), 'node_modules/.bin/', process.argv[2].toString() + ext);
 
-const opts = Object.assign({}, process.env);
-opts.cwd = process.cwd();
-opts.stdio = 'inherit';
-
-console.log('[spypkg] Executing: ' + command + ' ' + process.argv.slice(3));
-
-const result = child.spawnSync(command, process.argv.slice(3), opts);
-if (result.error || result.status !== 0) {
-  process.exit(1);
-} else {
-  process.exit(0);
+// prepare argv values into a flat argument
+for (let j = 3; j < process.argv.length; j++) {
+  if (process.argv[j] === '--verbose') {
+    verboseEnabled = true;
+  } else {
+    argument += ' ' + process.argv[j];
+  }
 }
+argument = argument.trimLeft();
+
+// let prefix: string = (process.platform === 'win32') ? 'cmd /c' : '';
+
+exe(command + ' ' + argument);

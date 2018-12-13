@@ -4,7 +4,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build spypkg",
+      "label": "Build 'spypkg'",
       "type": "npm",
       "script": "build:spypkg",
       "group": {
@@ -13,24 +13,15 @@
       }
     },
     {
-      "label": "Build spypkg-harness",
+      "label": "Build 'spypkg-harness'",
       "type": "npm",
       "script": "build:harness",
       "group": "build"
     },
     {
-      "label": "Watch 'lib/' for TypeScript",
+      "label": "Watch 'spypkg' for TypeScript",
       "type": "typescript",
-      "tsconfig": "spypkg\\tsconfig.json",
-      "option": "watch",
-      "problemMatcher": [
-        "$tsc-watch"
-      ]
-    },
-    {
-      "label": "Watch 'harness/' for TypeScript",
-      "type": "typescript",
-      "tsconfig": "spypkg\\harness\\tsconfig.json",
+      "tsconfig": "tsconfig.json",
       "option": "watch",
       "problemMatcher": [
         "$tsc-watch"
