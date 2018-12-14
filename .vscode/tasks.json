@@ -13,7 +13,7 @@
       }
     },
     {
-      "label": "Build 'spypkg-harness'",
+      "label": "Build 'harness deploy script'",
       "type": "npm",
       "script": "build:harness",
       "group": "build"
@@ -28,7 +28,7 @@
       ]
     },
     {
-      "label": "Watch 'harness' for TypeScript",
+      "label": "Watch 'harness deploy script' for TypeScript",
       "type": "typescript",
       "tsconfig": "harness\\tsconfig.json",
       "option": "watch",

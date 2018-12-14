@@ -7,8 +7,8 @@
   "author": "Marc Kassay <marckassay@gmail.com>",
   "private": true,
   "scripts": {
-    "add-spies": "node node_modules/spypkg/dist/index.js",
-    "remove-spies": "node node_modules/spypkg/dist/index.js --remove"
+    "add-spies": "node node_modules/spypkg/dist/index.js --verbose",
+    "remove-spies": "node node_modules/spypkg/dist/index.js --remove --verbose"
   },
   "spypkg": {
     "projectOutPath": "out",
