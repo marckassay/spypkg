@@ -1,16 +1,34 @@
 import * as child from 'child_process';
+import * as path from 'path';
 import { promisify } from 'util';
 
 const fs = require('fs-extra');
 const exec = promisify(child.exec);
 
+export async function makeFileExecutable(filePath): Promise<void> {
+  const changeMode = promisify(fs.chmod);
+  // octal '555' is expressed as: -r-xr-xr-x
+  return changeMode(filePath, '555')
+    .then(() => {
+      return Promise.resolve();
+    }, () => {
+      console.error('Unable to make the following file executable for POSIX environments: ' + filePath);
+      process.exit(1006);
+      return;
+    })
+    .catch(() => {
+      console.error('Unable to make the following file executable for POSIX environments: ' + filePath);
+      process.exit(1006);
+      return;
+    });
+}
+
+
 export async function deploy() {
   try {
     const shellExe = (process.platform === 'win32') ? 'cmd /c' : '';
-    // the following regex on Linux fails, but not on Windows. strangely it fails only when executed
-    // via '[yarn|npm] run' command but not directly using Node (node -e "console.log(...)")
-    // const npmExe: string = (RegExp(/.*([Y|y]arn.bin).*/).test(process.env.PATH)) ? 'yarn' : 'npm';
-    const npmExe: string = (process.env.PATH.search('Yarn')) ? 'yarn' : 'npm';
+    const npmExe = (await fs.pathExists(path.join(process.cwd(), 'yarn.lock'))) ? 'yarn' : 'npm';
+
     // keep relative paths as-is to avoid issues with linux distros...
     const relativeHarnessSrcPath = 'harness/spypkg-harness';
     const relativeHarnessDestinationPath = '../spypkg-harness';
@@ -20,6 +38,9 @@ export async function deploy() {
       try {
         await fs.ensureSymlink(relativeHarnessSrcPath, relativeHarnessDestinationPath, 'dir');
         console.log('[spypkg] Created filesystem symlink from: ' + relativeHarnessSrcPath + ', to: ' + relativeHarnessDestinationPath);
+        if (process.platform !== 'win32') {
+          await makeFileExecutable(relativeHarnessDestinationPath);
+        }
 
       } catch (err) {
         console.error('[spypkg] ' + err);

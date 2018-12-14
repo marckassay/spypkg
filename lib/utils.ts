@@ -148,8 +148,8 @@ function checkUsersPermissions(filePath, mode): boolean {
 */
 export async function makeFileExecutable(filePath): Promise<void> {
   const changeMode = promisify(fs.chmod);
-  // octal '0111' is expressed as: 'a+x'
-  return changeMode(filePath, '0111')
+  // octal '555' is expressed as: -r-xr-xr-x
+  return changeMode(filePath, '555')
     .then(() => {
       return Promise.resolve();
     }, () => {
