@@ -13,12 +13,12 @@ interface NPMExpressionShape {
 }
 
 /**
- * @external https://regex101.com/r/6PIM2J/3
+ * @external https://regex101.com/r/6PIM2J/4
  */
 const regex = new RegExp([
   '^(?<exe>npm)?\\ ?',
   '(?<run>(?<=\\k<exe> )run(?:-script)?)?\\ ?',
-  '(?<command>(?<=\\k<run> )[a-z]+(?:[:][a-z]+)?|(?<!\\k<run> )[a-z]+(?:[-][a-z]+)?)?\\ ?',
+  '(?<command>(?<=\\k<run> )[a-z]+(?:[-|:][a-z]+)?|(?<!\\k<run> )[a-z]+(?:[-][a-z]+)?)?\\ ?',
   '(?<pkgdetails>[a-z0-9\\>\\=\\:\\+\\#\\^\\.\\@\\/][a-z0-9\\>\\=\\:\\+\\#\\^\\.\\@\\/\\-]+)?\\ ?',
   '(?<options>(?:\\ [-]{1,2}[a-zA-Z]+(?:[-][a-z]+)*)*)?$'
 ].join(''));
