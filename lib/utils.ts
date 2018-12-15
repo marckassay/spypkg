@@ -2,6 +2,7 @@ import * as child from 'child_process';
 import * as fs from 'fs';
 import { promisify } from 'util';
 import * as path from 'path';
+const fse = require('fs-extra');
 
 // TODO: remove this to make it public; currently conflicts with orginial function
 const readFileAsync2 = promisify(fs.readFile);
@@ -86,14 +87,12 @@ export async function checkAndCreateACopy(source, destination): Promise<boolean>
   const copy = promisify(fs.copyFile);
   return await doesFileExistAsync(destination)
     .then((value: boolean) => {
-      if (value === false) {
-        // node.js ^10.12.0 is at least needed for mkdirSync's recursive option.
-        const destinationDirectoryPath = path.dirname(destination);
-        fs.mkdirSync(destinationDirectoryPath, { recursive: true });
+      if (!value) {
+        fse.ensureDirSync(path.dirname(destination));
         copy(source, destination);
-        return Promise.resolve<boolean>(true);
+        return true;
       } else {
-        return Promise.resolve<boolean>(false);
+        return false;
       }
     });
 }

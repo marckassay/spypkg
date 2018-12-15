@@ -39,6 +39,7 @@ UserInterfaceState.xcuserstate
 
 node_modules/
 
+build/harness/deploy.js
 build/harness/deploy.js.map
 harness/deploy.js
 harness/deploy.js.map
