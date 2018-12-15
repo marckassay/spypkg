@@ -5,60 +5,60 @@ import { promisify } from 'util';
 const fs = require('fs-extra');
 const exec = promisify(child.exec);
 
-export async function makeFileExecutable(filePath): Promise<void> {
+async function makeFileExecutable(filePath): Promise<void> {
   const changeMode = promisify(fs.chmod);
   // octal '555' is expressed as: -r-xr-xr-x
   return changeMode(filePath, '555')
     .then(() => {
       return Promise.resolve();
     }, () => {
-      console.error('Unable to make the following file executable for POSIX environments: ' + filePath);
+      console.error('[spypkg] Unable to make the following file executable for POSIX environments: ' + filePath);
       process.exit(1006);
       return;
     })
     .catch(() => {
-      console.error('Unable to make the following file executable for POSIX environments: ' + filePath);
+      console.error('[spypkg] Unable to make the following file executable for POSIX environments: ' + filePath);
       process.exit(1006);
       return;
     });
 }
 
-
-export async function deploy() {
+async function deploy() {
   try {
-    const shellExe = (process.platform === 'win32') ? 'cmd /c' : '';
-    const npmExe = (await fs.pathExists(path.join(process.cwd(), 'yarn.lock'))) ? 'yarn' : 'npm';
-
-    // keep relative paths as-is to avoid issues with linux distros...
+    // keep relative paths as-is to avoid issues POSIX...
     const relativeHarnessSrcPath = 'harness/spypkg-harness';
     const relativeHarnessDestinationPath = '../spypkg-harness';
 
-    // Create filesystem symlink... 
-    const createSymlink = async () => {
-      try {
-        await fs.ensureSymlink(relativeHarnessSrcPath, relativeHarnessDestinationPath, 'dir');
-        console.log('[spypkg] Created filesystem symlink from: ' + relativeHarnessSrcPath + ', to: ' + relativeHarnessDestinationPath);
-        if (process.platform !== 'win32') {
-          await makeFileExecutable(relativeHarnessDestinationPath);
-        }
+    const shellExe = (process.platform === 'win32') ? 'cmd /c' : '';
+    const npmExe = (await fs.pathExists(path.join(process.cwd(), 'yarn.lock'))) ? 'yarn' : 'npm';
 
-      } catch (err) {
-        console.error('[spypkg] ' + err);
-      }
+    // Create filesystem symlink from 'spypkg-harness' to 'harness/spypkg-harness'...
+    try {
+      await fs.ensureSymlink(relativeHarnessSrcPath, relativeHarnessDestinationPath, 'dir');
+      console.log('[spypkg] Created filesystem symlink from: ' + relativeHarnessSrcPath + ', to: ' + relativeHarnessDestinationPath);
+    } catch (err) {
+      console.error('[spypkg] ' + err);
     }
 
-    await createSymlink();
-
+    // Copy 'build/harness/.bin' to 'spypkg-harness/node_modules/.bin'...
     try {
       await fs.copy('build/harness/.bin', relativeHarnessDestinationPath + '/node_modules/.bin');
       console.log('[spypkg] Copied: build/harness/.bin --> ' + relativeHarnessDestinationPath + '/node_modules/.bin');
-
     } catch (err) {
-      console.error(err);
+      console.error('[spypkg] ' + err);
+    }
+
+    // Make 'spypkg-harness/node_modules/' executable...
+    try {
+      await makeFileExecutable(relativeHarnessDestinationPath);
+      console.log('[spypkg] Changed mode to executable: ' + relativeHarnessDestinationPath + '/node_modules');
+    } catch (err) {
+      console.error('[spypkg] ' + err);
     }
 
     console.log(`[spypkg] step 1/2 - Registering module for '${npmExe}' for linking.`);
-    // below is step 1 out of 2 of the nocde pm linking process...
+
+    // below is step 1 out of 2 of the node package manager linking process...
     let command: string = (shellExe + ' ' + npmExe + ' link').trimLeft();
     console.log('[spypkg] Executing: ' + command);
     const toProceed = await exec(command)
@@ -72,7 +72,7 @@ export async function deploy() {
         return true;
       })
       .catch((reason) => {
-        console.log(reason);
+        console.log('[spypkg] ' + reason);
         return false;
       });
 
@@ -80,7 +80,9 @@ export async function deploy() {
     if (toProceed) {
       process.chdir(relativeHarnessDestinationPath);
       console.log(`[spypkg] Changed directory to: ${process.cwd()}`);
+
       console.log('[spypkg] step 2/2 - Appling new link to harness directory.');
+
       // ...now execute the link command again specifiying 'spypkg'...
       command = (shellExe + ' ' + npmExe + ' link spypkg --dev').trimLeft();
       console.log('[spypkg] Executing: ' + command);
@@ -88,7 +90,7 @@ export async function deploy() {
         .then((onfulfilled) => {
           if (onfulfilled.stdout) {
             // console.log(onfulfilled.stdout);
-            console.log('[spypkg] Test harness deployed successfully.');
+            console.log('[spypkg] Test harness deployed successfully!');
           }
           if (onfulfilled.stderr) {
             console.log('[spypkg] ' + onfulfilled.stderr);
@@ -96,9 +98,9 @@ export async function deploy() {
         })
         .catch((reason) => {
           console.log('[spypkg] ' + reason);
+          return false;
         });
     }
-
   } catch (err) {
     console.error('[spypkg] ' + err);
   }

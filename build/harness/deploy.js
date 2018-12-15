@@ -50,73 +50,66 @@ function makeFileExecutable(filePath) {
                     .then(function () {
                     return Promise.resolve();
                 }, function () {
-                    console.error('Unable to make the following file executable for POSIX environments: ' + filePath);
+                    console.error('[spypkg] Unable to make the following file executable for POSIX environments: ' + filePath);
                     process.exit(1006);
                     return;
                 })
                     .catch(function () {
-                    console.error('Unable to make the following file executable for POSIX environments: ' + filePath);
+                    console.error('[spypkg] Unable to make the following file executable for POSIX environments: ' + filePath);
                     process.exit(1006);
                     return;
                 })];
         });
     });
 }
-exports.makeFileExecutable = makeFileExecutable;
 function deploy() {
     return __awaiter(this, void 0, void 0, function () {
-        var shellExe, npmExe, relativeHarnessSrcPath_1, relativeHarnessDestinationPath_1, createSymlink, err_1, command, toProceed, err_2;
-        var _this = this;
+        var relativeHarnessSrcPath, relativeHarnessDestinationPath, shellExe, npmExe, err_1, err_2, err_3, command, toProceed, err_4;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 10, , 11]);
+                    _a.trys.push([0, 15, , 16]);
+                    relativeHarnessSrcPath = 'harness/spypkg-harness';
+                    relativeHarnessDestinationPath = '../spypkg-harness';
                     shellExe = (process.platform === 'win32') ? 'cmd /c' : '';
                     return [4 /*yield*/, fs.pathExists(path.join(process.cwd(), 'yarn.lock'))];
                 case 1:
                     npmExe = (_a.sent()) ? 'yarn' : 'npm';
-                    relativeHarnessSrcPath_1 = 'harness/spypkg-harness';
-                    relativeHarnessDestinationPath_1 = '../spypkg-harness';
-                    createSymlink = function () { return __awaiter(_this, void 0, void 0, function () {
-                        var err_3;
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0:
-                                    _a.trys.push([0, 4, , 5]);
-                                    return [4 /*yield*/, fs.ensureSymlink(relativeHarnessSrcPath_1, relativeHarnessDestinationPath_1, 'dir')];
-                                case 1:
-                                    _a.sent();
-                                    console.log('[spypkg] Created filesystem symlink from: ' + relativeHarnessSrcPath_1 + ', to: ' + relativeHarnessDestinationPath_1);
-                                    if (!(process.platform !== 'win32')) return [3 /*break*/, 3];
-                                    return [4 /*yield*/, makeFileExecutable(relativeHarnessDestinationPath_1)];
-                                case 2:
-                                    _a.sent();
-                                    _a.label = 3;
-                                case 3: return [3 /*break*/, 5];
-                                case 4:
-                                    err_3 = _a.sent();
-                                    console.error('[spypkg] ' + err_3);
-                                    return [3 /*break*/, 5];
-                                case 5: return [2 /*return*/];
-                            }
-                        });
-                    }); };
-                    return [4 /*yield*/, createSymlink()];
+                    _a.label = 2;
                 case 2:
-                    _a.sent();
-                    _a.label = 3;
+                    _a.trys.push([2, 4, , 5]);
+                    return [4 /*yield*/, fs.ensureSymlink(relativeHarnessSrcPath, relativeHarnessDestinationPath, 'dir')];
                 case 3:
-                    _a.trys.push([3, 5, , 6]);
-                    return [4 /*yield*/, fs.copy('build/harness/.bin', relativeHarnessDestinationPath_1 + '/node_modules/.bin')];
-                case 4:
                     _a.sent();
-                    console.log('[spypkg] Copied: build/harness/.bin --> ' + relativeHarnessDestinationPath_1 + '/node_modules/.bin');
-                    return [3 /*break*/, 6];
-                case 5:
+                    console.log('[spypkg] Created filesystem symlink from: ' + relativeHarnessSrcPath + ', to: ' + relativeHarnessDestinationPath);
+                    return [3 /*break*/, 5];
+                case 4:
                     err_1 = _a.sent();
-                    console.error(err_1);
-                    return [3 /*break*/, 6];
+                    console.error('[spypkg] ' + err_1);
+                    return [3 /*break*/, 5];
+                case 5:
+                    _a.trys.push([5, 7, , 8]);
+                    return [4 /*yield*/, fs.copy('build/harness/.bin', relativeHarnessDestinationPath + '/node_modules/.bin')];
                 case 6:
+                    _a.sent();
+                    console.log('[spypkg] Copied: build/harness/.bin --> ' + relativeHarnessDestinationPath + '/node_modules/.bin');
+                    return [3 /*break*/, 8];
+                case 7:
+                    err_2 = _a.sent();
+                    console.error('[spypkg] ' + err_2);
+                    return [3 /*break*/, 8];
+                case 8:
+                    _a.trys.push([8, 10, , 11]);
+                    return [4 /*yield*/, makeFileExecutable(relativeHarnessDestinationPath)];
+                case 9:
+                    _a.sent();
+                    console.log('[spypkg] Changed mode to executable: ' + relativeHarnessDestinationPath + '/node_modules/');
+                    return [3 /*break*/, 11];
+                case 10:
+                    err_3 = _a.sent();
+                    console.error('[spypkg] ' + err_3);
+                    return [3 /*break*/, 11];
+                case 11:
                     console.log("[spypkg] step 1/2 - Registering module for '" + npmExe + "' for linking.");
                     command = (shellExe + ' ' + npmExe + ' link').trimLeft();
                     console.log('[spypkg] Executing: ' + command);
@@ -131,13 +124,13 @@ function deploy() {
                             return true;
                         })
                             .catch(function (reason) {
-                            console.log(reason);
+                            console.log('[spypkg] ' + reason);
                             return false;
                         })];
-                case 7:
+                case 12:
                     toProceed = _a.sent();
-                    if (!toProceed) return [3 /*break*/, 9];
-                    process.chdir(relativeHarnessDestinationPath_1);
+                    if (!toProceed) return [3 /*break*/, 14];
+                    process.chdir(relativeHarnessDestinationPath);
                     console.log("[spypkg] Changed directory to: " + process.cwd());
                     console.log('[spypkg] step 2/2 - Appling new link to harness directory.');
                     // ...now execute the link command again specifiying 'spypkg'...
@@ -155,18 +148,18 @@ function deploy() {
                         })
                             .catch(function (reason) {
                             console.log('[spypkg] ' + reason);
+                            return false;
                         })];
-                case 8: return [2 /*return*/, _a.sent()];
-                case 9: return [3 /*break*/, 11];
-                case 10:
-                    err_2 = _a.sent();
-                    console.error('[spypkg] ' + err_2);
-                    return [3 /*break*/, 11];
-                case 11: return [2 /*return*/];
+                case 13: return [2 /*return*/, _a.sent()];
+                case 14: return [3 /*break*/, 16];
+                case 15:
+                    err_4 = _a.sent();
+                    console.error('[spypkg] ' + err_4);
+                    return [3 /*break*/, 16];
+                case 16: return [2 /*return*/];
             }
         });
     });
 }
-exports.deploy = deploy;
 deploy();
 //# sourceMappingURL=deploy.js.map
