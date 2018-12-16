@@ -4,7 +4,7 @@ const path = require("path");
 async function copy(srcpath, dstpath) {
   try {
     await fs.copy(srcpath, path.join(process.cwd(), dstpath));
-    console.log('[spypkg] Copied: ' + srcpath + ' --> ' + dstpath);
+    console.log('[spypkg] Copied: ' + srcpath + ' -> ' + dstpath);
   } catch (err) {
     console.error(err)
   }

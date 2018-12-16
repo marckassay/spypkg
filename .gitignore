@@ -39,7 +39,5 @@ UserInterfaceState.xcuserstate
 
 node_modules/
 
-build/harness/deploy.js
-build/harness/deploy.js.map
-harness/deploy.js
-harness/deploy.js.map
+build/harness/
+!harness/spypkg-harness/node_modules/

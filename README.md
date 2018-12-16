@@ -20,7 +20,7 @@ This is accomplished in the same fashion as 'yarn in lieu of npm' objective. Tha
 
 - Unless a spy is deployed to executed in one of the OS's environment paths, the dependency needs to be accessible whether directly or symbolically on the file system. If the project is not intended to be published to the package manager registry, these dependencies can be added/installed by a package manager so that it will be listed in the descriptor file and reside in 'node_modules' directory.
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/marckassay/spypkg/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/spypkg.svg?style=flat)](https://www.npmjs.com/package/spypkg) [![npm version](https://img.shields.io/npm/v/sots.svg?style=flat)](https://yarn.pm/sots)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/marckassay/spypkg/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/spypkg.svg?style=flat)](https://www.npmjs.com/package/spypkg)
 
 ## Install
 
@@ -166,6 +166,8 @@ After installing spypkg, add the following convenience commands to the host proj
    "remove-spies": "node ./node_modules/spypkg/dist/index.js --remove --verbose"
  }
 ```
+
+For POSIX installs, it may be benefical to clear shell's hash by executing ```hash -r``` after deploying and removal of spies.
 
 #### `add-spies`
 
