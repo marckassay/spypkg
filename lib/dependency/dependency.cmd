@@ -9,6 +9,16 @@ SET $CurrentDir=%cd%
 SET $Args=%~n0 %*
 SET $JsonConfig=%$CurrentDir%\package.json
 
+IF NOT EXIST %$JsonConfig% (
+  ECHO 'spypkg' was unable to load 'package.json' in the current directory for '%~n0' command. 
+  ECHO Remove the following file if not needed: %0 
+  
+  ENDLOCAL
+  @ECHO ON
+
+  EXIT 1 
+)
+
 :: returns absolute path to projectOutPath directory
 FOR /F "USEBACKQ tokens=2 delims=:," %%G IN (`findstr /r /c:".*projectOutPath.*:.*" %$JsonConfig%`) DO (
   SET $Outpath=%%G
@@ -28,6 +38,7 @@ IF NOT EXIST %$AdaptorFullPath% (
 
 ECHO [spypkg] Executing: node %$AdaptorFullPath% %$Args%
 node %$AdaptorFullPath% %$Args%
+
 
 ENDLOCAL
 @ECHO ON

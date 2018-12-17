@@ -1,12 +1,13 @@
 {
   "name": "spypkg",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "spypkg (spy package) is to intercept shell expressions for modification and to redirect execution.",
   "repository": "https://github.com/marckassay/spypkg.git",
   "author": "Marc Kassay <marckassay@gmail.com>",
   "license": "MIT",
-  "private": true,
+  "private": false,
   "scripts": {
+    "prepublishOnly": "npm run build:spypkg",
     "build:spypkg": "node_modules/.bin/tsc -p tsconfig.json && node build/copy.js",
     "build:harness": "node_modules/.bin/tsc -p harness/tsconfig.json",
     "install:harness": "node build/harness/deploy.js"
