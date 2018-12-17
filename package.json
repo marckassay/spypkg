@@ -1,6 +1,6 @@
 {
   "name": "spypkg",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "spypkg (spy package) is to intercept shell expressions for modification and to redirect execution.",
   "repository": "https://github.com/marckassay/spypkg.git",
   "author": "Marc Kassay <marckassay@gmail.com>",
