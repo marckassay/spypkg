@@ -1,4 +1,5 @@
-:: spypkg has generated this file
+:: SPYPKG HAS GENERATED THIS FILE!
+:: If the above comment is modified or removed, 'spypkg' will not deleted this file.
 @ECHO OFF
 @SETLOCAL
 SETLOCAL enableDelayedExpansion

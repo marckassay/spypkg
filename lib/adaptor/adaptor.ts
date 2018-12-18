@@ -4,14 +4,20 @@ import * as child from 'child_process';
 import * as path from 'path';
 
 import { promisify } from 'util';
-const exec = promisify(child.exec);
+import { SpawnOptions } from 'child_process';
+const spawn = <(command: string, opts: SpawnOptions) => Promise<child.ChildProcess>>promisify(child.spawn);
+
+const options: SpawnOptions = {
+  stdio: 'inherit',
+  shell: true
+};
 
 const exe = async (expression) => {
   if (verboseEnabled) {
     console.log('[spypkg] Executing: ' + expression);
   }
 
-  return await exec(expression)
+  return await spawn(expression, options)
     .then((onfulfilled) => {
       if (onfulfilled.stdout) {
         console.log(onfulfilled.stdout);

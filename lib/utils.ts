@@ -61,7 +61,7 @@ export async function executeScriptBlock(scriptblock: string, err_message: strin
     });
 }
 
-export async function removeFile(filePath: string, err_message: string): Promise<void> {
+export async function removeFile(filePath: string, err_message: string): Promise<boolean> {
   const remove = promisify(fs.unlink);
   // tslint:disable-next-line:no-bitwise
   err_message;
@@ -72,12 +72,16 @@ export async function removeFile(filePath: string, err_message: string): Promise
       return;
     }
   */
-  return await remove(filePath).catch(() => {
-    console.error('Although permissions to remove file is correct, failure occurred.' +
-      ' Is there another process accessing this file?: ' + filePath);
-    process.exit(1004);
-    return;
-  });
+  return await remove(filePath)
+    .then(() => {
+      return true;
+    })
+    .catch(() => {
+      console.error('Although permissions to remove file is correct, failure occurred.' +
+        ' Is there another process accessing this file?: ' + filePath);
+      process.exit(1004);
+      return false;
+    });
 }
 
 /**

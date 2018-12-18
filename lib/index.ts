@@ -3,13 +3,17 @@
 import * as util from './utils';
 import { join } from 'path';
 
+interface DeployShape { src?: string, dest: string }
+
+interface Spy {
+  name: string,
+  location: string,
+  adaptor?: string
+}
+
 interface SpypkgConfig {
   projectOutPath: string;
-  spies: [{
-    name: string,
-    location: string,
-    adaptor?: string
-  }];
+  spies: Array<Spy>;
 }
 
 const configFilename = 'package.json';
@@ -42,6 +46,12 @@ function outAdaptor(name: string = adaptorFileName): string {
   return join(outDirPath, name);
 }
 
+async function asyncForEach<T>(value: Array<T>, callback) {
+  for (let index = 0; index < value.length; index++) {
+    await callback(value[index], index, value) as T;
+  }
+}
+
 async function loadConfiguration() {
   try {
     await util.doesFileExistAsync(configFilePath, 'Unable to load ' + configFilename);
@@ -66,18 +76,32 @@ async function addspies() {
   let config: SpypkgConfig = await loadConfiguration();
   outDirPath = config.projectOutPath;
 
-  for (const spy of config.spies) {
-    await removeCommmandDependency(spy.name, spy.location);
+  await removespies(config);
+
+  asyncForEach<Spy>((config.spies), async (spy: Spy) => {
     await addCommandDependency(spy.name, spy.location, spy.adaptor);
-  }
+  });
 }
 
-async function removespies() {
-  let config: SpypkgConfig = await loadConfiguration();
+async function removespies(config?: SpypkgConfig) {
+  if (!config) {
+    config = await loadConfiguration();
+  }
   outDirPath = config.projectOutPath;
 
-  for (const spy of config.spies) {
+  await asyncForEach<Spy>((config.spies), async (spy: Spy) => {
     await removeCommmandDependency(spy.name, spy.location);
+  });
+}
+
+/*
+* Resolve commandDirectoryPath if its in a scriptblock.
+*/
+async function checkForScriptBlock(commandDirectoryPath): Promise<string> {
+  if (commandDirectoryPath.startsWith('{') || commandDirectoryPath.endsWith('}')) {
+    return await util.executeScriptBlock(commandDirectoryPath, 'Unable to execute the following scriptblock: ');
+  } else {
+    return Promise.resolve(commandDirectoryPath);
   }
 }
 
@@ -91,11 +115,7 @@ environment variable.
 * @param {string} adaptor the JS file where the command resolves to. Defaults to `adaptor.js`.
 */
 async function addCommandDependency(name: string, commandDirectoryPath: string, adaptor?: string) {
-  // resolve commandDirectoryPath if its in a scriptblock.
-  if (commandDirectoryPath.startsWith('{') || commandDirectoryPath.endsWith('}')) {
-    commandDirectoryPath = await util.executeScriptBlock(commandDirectoryPath, 'Unable to execute the following scriptblock: ');
-  }
-  const commandPath: string = join(commandDirectoryPath, name);
+  commandDirectoryPath = await checkForScriptBlock(commandDirectoryPath);
 
   let adaptorSrc: string;
   if (adaptor === undefined) {
@@ -113,64 +133,66 @@ async function addCommandDependency(name: string, commandDirectoryPath: string, 
 
   await util.makeFileExecutable(outBashDependency());
 
-  await util.checkAndCreateACopy(outBashDependency(), commandPath)
-    .then((value) => {
-      if (verboseEnabled) {
-        if (value) {
-          console.log(`[spypkg] Adding: ${commandPath}`);
-        }
-      }
-    });
 
-  await util.checkAndCreateACopy(outCmdDependency(), commandPath + '.cmd')
-    .then((value) => {
-      if (verboseEnabled) {
-        if (value) {
-          console.log(`[spypkg] Adding: ${commandPath}.cwd`);
+  const bashPath: string = join(commandDirectoryPath, name);
+  const batchPath: string = join(commandDirectoryPath, (name + '.cmd'));
+  const arr = [{ src: outBashDependency(), dest: bashPath }, { src: outCmdDependency(), dest: batchPath }];
+
+  await asyncForEach<DeployShape>(arr, async (spy: DeployShape) => {
+    await util.checkAndCreateACopy(spy.src, spy.dest)
+      .then((value) => {
+        if (verboseEnabled) {
+          if (value) {
+            console.log(`[spypkg] Added: ${spy.dest}`);
+          }
         }
-      }
-    });
+        return;
+      });
+    return;
+  });
+
+  return Promise.resolve();
 }
 
 async function removeCommmandDependency(name: string, commandDirectoryPath: string) {
-  // resolve commandDirectoryPath if its in a scriptblock.
-  if (commandDirectoryPath.startsWith('{') || commandDirectoryPath.endsWith('}')) {
-    commandDirectoryPath = await util.executeScriptBlock(commandDirectoryPath, 'Unable to execute the following scriptblock: ');
-  }
+  commandDirectoryPath = await checkForScriptBlock(commandDirectoryPath);
 
-  const commandPath: string = join(commandDirectoryPath, name);
+  const bashPath: string = join(commandDirectoryPath, name);
+  const batchPath: string = join(commandDirectoryPath, name + '.cmd');
 
-  await util.doesFileExistAsync(commandPath)
-    .then((value: boolean) => {
-      if (value === true) {
-        util.removeFile(commandPath, 'Unable to remove the file. Do you have permissions to access this file?: ')
-          .then(() => {
-            if (verboseEnabled) {
-              console.log(`[spypkg] Removed: ${commandPath}`);
-            }
-          })
-      } else {
-        if (verboseEnabled) {
-          console.log(`[spypkg] File does not exist: ${commandPath}`);
+  await asyncForEach<DeployShape>([{ dest: bashPath }, { dest: batchPath }], async (spy: DeployShape) => {
+
+    let continu: boolean = await util.doesFileExistAsync(spy.dest)
+      .then((value: boolean) => {
+        if (!value && verboseEnabled) {
+          console.log(`[spypkg] File does not exist: ${spy.dest}`);
         }
-      }
-    });
+        return value;
+      });
 
-  await util.doesFileExistAsync(commandPath + '.cmd')
-    .then((value: boolean) => {
-      if (value === true) {
-        util.removeFile(commandPath + '.cmd', 'Unable to remove the file. Do you have permissions to access this file?: ')
-          .then(() => {
-            if (verboseEnabled) {
-              console.log(`[spypkg] Removed: ${commandPath}.cmd`);
-            }
-          })
+    let fileContent: string = '';
+    if (continu) {
+      fileContent = await util.readFileAsync(spy.dest, 'Unable to determine if file is from spypkg. Remove or backup the following file: ' + spy.dest);
+      continu = (fileContent.length > 0);
+    }
+
+    if (continu) {
+      const foundSpypkgMsg: boolean = fileContent.search(/(SPYPKG HAS GENERATED THIS FILE!)/) !== -1;
+      if (!foundSpypkgMsg) {
+        console.log(`[spypkg] This file seems to have not been generated by spypkg. Remove or backup this file: ${spy.dest}`);
+        continu = false;
       } else {
-        if (verboseEnabled) {
-          console.log(`[spypkg] File does not exist: ${commandPath}.cmd`);
-        }
+        continu = await util.removeFile(spy.dest, 'Unable to remove file. Do you have permissions to access this file?: ');
       }
-    });
+    }
+
+    if (continu && verboseEnabled) {
+      console.log(`[spypkg] Removed: ${spy.dest}`);
+    }
+
+    return;
+  });
+
   return Promise.resolve();
 }
 

@@ -2,7 +2,14 @@
 
 import * as child from 'child_process';
 import { promisify } from 'util';
-const exec = promisify(child.exec);
+import { SpawnOptions } from 'child_process';
+
+const spawn = <(command: string, opts: SpawnOptions) => Promise<child.ChildProcess>>promisify(child.spawn);
+
+const options: SpawnOptions = {
+  stdio: 'inherit',
+  shell: true
+};
 
 interface NPMExpressionShape {
   exe?: string;
@@ -13,12 +20,12 @@ interface NPMExpressionShape {
 }
 
 /**
- * @external https://regex101.com/r/6PIM2J/4
+ * @external https://regex101.com/r/6PIM2J/5
  */
 const regex = new RegExp([
   '^(?<exe>npm)?\\ ?',
   '(?<run>(?<=\\k<exe> )run(?:-script)?)?\\ ?',
-  '(?<command>(?<=\\k<run> )[a-z]+(?:[-|:][a-z]+)?|(?<!\\k<run> )[a-z]+(?:[-][a-z]+)?)?\\ ?',
+  '(?<command>(?<=\\k<run> )[a-z]+(?:[-|:|.|_][a-z]+)?|(?<!\\k<run> )[a-z]+(?:[-][a-z]+)?)?\\ ?',
   '(?<pkgdetails>[a-z0-9\\>\\=\\:\\+\\#\\^\\.\\@\\/][a-z0-9\\>\\=\\:\\+\\#\\^\\.\\@\\/\\-]+)?\\ ?',
   '(?<options>(?:\\ [-]{1,2}[a-zA-Z]+(?:[-][a-z]+)*)*)?$'
 ].join(''));
@@ -111,7 +118,7 @@ const exe = async (npmExpression, yarnExpression) => {
     console.log(yarnExpression);
   }
 
-  return await exec(yarnExpression)
+  return await spawn(yarnExpression, options)
     .then((onfulfilled) => {
       if (onfulfilled.stdout) {
         console.log(onfulfilled.stdout);
