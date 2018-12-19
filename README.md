@@ -16,9 +16,9 @@ This is accomplished in the same fashion as 'yarn in lieu of npm' objective. Tha
 
 ## Caveats
 
-- When assigning `location` value for a spy in the configuration (See "Setup" section below), verify that the location is indeed in the OS's environment `PATH`. And make sure it's in a position with-in `PATH` that no other sub-path intercepts the one intended.
+- When assigning `location` value for a spy in the configuration (See "Setup" section below), verify that the location is indeed in the OS's environment `PATH`. And make sure it's in a position with-in `PATH` that no other sub-path intercepts the one intended. An alternative, is to add a new sub-path at the 0 index of `PATH` that will be exclusive to containing spys.
 
-- Unless a spy is deployed to executed in one of the OS's environment paths, the dependency needs to be accessible whether directly or symbolically on the file system. If the project is not intended to be published to the package manager registry, these dependencies can be added/installed by a package manager so that it will be listed in the descriptor file and reside in 'node_modules' directory.
+- Unless a spy is deployed to be executed in one of the OS's environment paths, the dependency needs to be accessible whether directly or symbolically on the file system. If the project is not intended to be published to the package manager registry, these dependencies can be added/installed by a package manager so that it will be listed in the descriptor file and reside in 'node_modules' directory.
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/marckassay/spypkg/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/spypkg.svg?style=flat)](https://www.npmjs.com/package/spypkg)
 

@@ -1,5 +1,5 @@
 :: SPYPKG HAS GENERATED THIS FILE!
-:: If the above comment is modified or removed, 'spypkg' will not deleted this file.
+:: If the above comment is modified or removed, 'spypkg' will not delete this file.
 @ECHO OFF
 @SETLOCAL
 SETLOCAL enableDelayedExpansion
@@ -30,6 +30,16 @@ FOR /F "USEBACKQ tokens=2 delims=:," %%G IN (`findstr /r /c:".*projectOutPath.*:
   SET $Outpath=!$Outpath: =!
 )
 
+IF "%$Outpath%" == "" (
+  ECHO 'spypkg' was unable to find 'projectOutPath' property in 'package.json' for '%~n0' command. 
+  ECHO Remove the following file if not needed: %0 
+
+  ENDLOCAL
+  @ECHO ON
+
+  EXIT 1 
+)
+
 SET $AdaptorFullPath=%$CurrentDir%\%$Outpath%\%~n0-adaptor.js
 SET $AdaptorFullPath=!$AdaptorFullPath:\\=\!
 
@@ -39,7 +49,6 @@ IF NOT EXIST %$AdaptorFullPath% (
 
 ECHO [spypkg] Executing: node %$AdaptorFullPath% %$Args%
 node %$AdaptorFullPath% %$Args%
-
 
 ENDLOCAL
 @ECHO ON

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # SPYPKG HAS GENERATED THIS FILE!
-# If the above comment is modified or removed, 'spypkg' will not deleted this file.
+# If the above comment is modified or removed, 'spypkg' will not delete this file.
 currentdir=$PWD
 filename=$(basename "$0")
 args="$@"
@@ -10,6 +10,12 @@ if [ -f $currentdir/package.json ]; then
   outpath=$(node -pe "JSON.parse(process.argv[1]).spypkg.projectOutPath" "$(cat $currentdir/package.json)")
   adaptorfullpath=$(realpath $currentdir/$outpath/$filename-adaptor.js)
 
+  if [[ "$outpath" = "" ]]; then
+    echo "'spypkg' was unable to find 'projectOutPath' property in 'package.json' for '"$filename"' command."
+    echo "Remove the following file if not needed: "$0
+    exit 1
+  fi
+  
   if [ ! -f "$adaptorfullpath" ]; then
     adaptorfullpath=$(realpath $currentdir/$outpath/adaptor.js)
   fi
