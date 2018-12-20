@@ -40,6 +40,16 @@ IF "%$Outpath%" == "" (
   EXIT 1 
 )
 
+IF NOT EXIST %$CurrentDir%\%$Outpath% (
+  ECHO 'spypkg' was unable to find '%$Outpath%' directory.
+  ECHO Remove the following file if not needed: %0 
+
+  ENDLOCAL
+  @ECHO ON
+
+  EXIT 1 
+)
+
 SET $AdaptorFullPath=%$CurrentDir%\%$Outpath%\%~n0-adaptor.js
 SET $AdaptorFullPath=!$AdaptorFullPath:\\=\!
 
