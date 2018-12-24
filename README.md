@@ -1,6 +1,6 @@
 # spypkg
 
-spypkg (spy package) is a Node.js package to intercept command-line expressions that have been executed and with these expressions, an adaptor file can modify them to execute again.
+spypkg (spy package) is a Node.js package to intercept command-line expressions that have been executed and with these expressions, an adaptor file can modify them to be executed in another form.
 
 As of recent in my development, an [issue](https://github.com/apache/cordova-fetch/issues/46) surfaced when a dependency required `npm` instead of host project's package manager, `yarn`. And because of this issue, spypkg has been developed.
 
@@ -16,9 +16,11 @@ This is accomplished in the same fashion as 'yarn in lieu of npm' objective. Tha
 
 ## Caveats
 
-- When assigning `location` value for a spy in the configuration (See "Setup" section below), verify that the location is indeed in the OS's environment `PATH`. And make sure it's in a position with-in `PATH` that no other sub-path intercepts the one intended. An alternative, is to add a new sub-path at the 0 index of `PATH` that will be exclusive to containing spys.
+- When assigning `location` value for a spy in the configuration (See "Setup" section below), verify that the location is indeed in the OS's environment `PATH`. And make sure it's in a position with-in `PATH` that no other sub-path intercepts the one intended. An alternative, is to add a new sub-path at the zero index of `PATH` that will be exclusive for spys.
 
 - Unless a spy is deployed to be executed in one of the OS's environment paths, the dependency needs to be accessible whether directly or symbolically on the file system. If the project is not intended to be published to the package manager registry, these dependencies can be added/installed by a package manager so that it will be listed in the descriptor file and reside in 'node_modules' directory.
+
+- And in an addition to having the dependency in the 'node_modules', initializing a new project with a spy is possible. For instance, cordova and ionic require when creating a new project that the destination directory doesn’t exist. So simply create a directory that will eventually be the actual project directory. Then execute cordova, for an example, to create a project in the sub-directory of the one that you just made. Now move all files and folders that cordova generated into the one you made and delete the sub-directory cordova created.
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/marckassay/spypkg/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/spypkg.svg?style=flat)](https://www.npmjs.com/package/spypkg)
 
@@ -42,20 +44,24 @@ link: [yarnpkg.com/en/package/spypkg](https://yarnpkg.com/en/package/spypkg)
 
 ### 'yarn in lieu of npm' configuration example
 
-The only requirement for this configuration, is to add the `spypkg` property to `package.json`, with similar information as follows:
+For this configuration, add the `spypkg` property to `package.json`, add the location folder (i.e. '.spypkg'):
 
 ```json
- "spypkg": {
-   "projectOutPath": "out",
-   "spies": [
-     {
-       "name": "npm",
-       "location": "C:\\Program Files\\nodejs",
-       "adaptor": "*/npm-adaptor.js"
-     }
-   ]
+ {
+  "spypkg": {
+    "projectOutPath": "out",
+    "spies": [
+      {
+        "name": "npm",
+        "location": "C:\\Users\\marc\\AppData\\Roaming\\.spies",
+        "adaptor": "*/npm-adaptor.js"
+      }
+    ]
+  }
  }
 ```
+
+Now add script commands as explained in the subsequent note:
 
 * See "Configuration" section below for more about configuring.
 * See also "Adding and Removing Spies" section below on how to execute.
@@ -71,12 +77,14 @@ This example is very similar to the 'yarn in lieu of npm' example. The only diff
    "spies": [
      {
        "name": "ionic",
-       "location": "{yarn global bin}"
+       "location": "/home/marc/.spies"
      }
    ]
  }
 }
 ```
+
+Now add script commands as explained in the subsequent note:
 
 * See "Configuration" section below for more about configuring.
 * See also "Adding and Removing Spies" section below on how to execute.
@@ -129,9 +137,9 @@ After spypkg is installed, a configuration property `spypkg` is required in the 
              "description": "The path of where spypkg will deploy the shell-script files. If the value is surrounded by curly-braces, then it will be evaluated by spypkg",
              "type": "string",
              "examples": [
-               "C:\\Program Files\\nodejs",
-               "/usr/bin/",
-               "{yarn global bin}"
+               "C:\\Users\\marc\\AppData\\Roaming\\.spies",
+               "/home/marc/.spies",
+               "{yarn global dir}"
              ]
            },
            "adaptor": {
@@ -161,13 +169,15 @@ After spypkg is installed, a configuration property `spypkg` is required in the 
 After installing spypkg, add the following convenience commands to the host project's `package.json`:
 
 ```json
- "scripts": {
-   "add-spies": "node ./node_modules/spypkg/dist/index.js --verbose",
-   "remove-spies": "node ./node_modules/spypkg/dist/index.js --remove --verbose"
- }
+{
+  "scripts": {
+    "add-spies": "node ./node_modules/spypkg/dist/index.js --verbose",
+    "remove-spies": "node ./node_modules/spypkg/dist/index.js --remove --verbose"
+  }
+}
 ```
 
-For POSIX installs, it may be benefical to clear shell's hash by executing ```hash -r``` after deploying and removal of spies.
+For POSIX systems, it may be beneficial to clear shell's hash by executing ```hash -r``` after deploying and removal of spies.
 
 #### `add-spies`
 
@@ -177,7 +187,7 @@ When `add-spies` command is executed, spypkg will load the configuration object 
 
 When `remove-spies` command is executed, spypkg will load the configuration object and remove only the files that it deployed to the `location` directories.
 
-* See "Configuration" section below for more about configuring.
+* See "Configuration" section above for more about configuring.
 
 ## spypkg-harness
 
