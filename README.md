@@ -2,7 +2,7 @@
 
 spypkg (spy package) is a Node.js package to intercept command-line expressions that have been executed and with these expressions, an adaptor file can modify them to be executed in another form.
 
-As of recent in my development, an [issue](https://github.com/apache/cordova-fetch/issues/46) surfaced when a dependency required `npm` instead of host project's package manager, `yarn`. And because of this issue, spypkg has been developed.
+As of recent in my development, an issue mentioned [here](https://github.com/apache/cordova-cli/issues/303), [here](https://github.com/apache/cordova-fetch/issues/46) and [here](https://github.com/apache/cordova-cli/pull/292) surfaced when a dependency required `npm` instead of host project's package manager, `yarn`. And because of this issue, spypkg has been developed.
 
 To address this 'npm in lieu of yarn' issue and to publish a solution for similar issues, the following objectives needed to be accomplished:
  - Intercept the execution of a shell expression, whether system is POSIX or Windows, and pass this expression to an adaptor file.
@@ -20,7 +20,7 @@ This is accomplished in the same fashion as 'yarn in lieu of npm' objective. Tha
 
 - Unless a spy is deployed to be executed in one of the OS's environment paths, the dependency needs to be accessible whether directly or symbolically on the file system. If the project is not intended to be published to the package manager registry, these dependencies can be added/installed by a package manager so that it will be listed in the descriptor file and reside in 'node_modules' directory.
 
-- And in an addition to having the dependency in the 'node_modules', initializing a new project with a spy is possible. For instance, cordova and ionic require when creating a new project that the destination directory doesn’t exist. So simply create a directory that will eventually be the actual project directory. Then execute cordova, for an example, to create a project in the sub-directory of the one that you just made. Now move all files and folders that cordova generated into the one you made and delete the sub-directory cordova created.
+- And in an addition to having the dependency in the 'node_modules', initializing a new project with a spy is possible. For instance, cordova and ionic require when creating a new project that the destination directory doesn’t exist. So simply create a directory that will eventually be the actual project directory. Then execute cordova, for an example, to create a project in the sub-directory of the one that you just made. Now move all files and folders that were generated into the one you made and delete the sub-directory cordova created.
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/marckassay/spypkg/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/spypkg.svg?style=flat)](https://www.npmjs.com/package/spypkg)
 
@@ -44,7 +44,7 @@ link: [yarnpkg.com/en/package/spypkg](https://yarnpkg.com/en/package/spypkg)
 
 ### 'yarn in lieu of npm' configuration example
 
-For this configuration, add the `spypkg` property to `package.json`, add the location folder (i.e. '.spypkg'):
+For this configuration, add the `spypkg` property to `package.json`, add the location folder (i.e. '.spies'):
 
 ```json
  {
