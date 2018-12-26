@@ -3,22 +3,26 @@
 import * as util from './utils';
 import { join } from 'path';
 
-interface DeployShape { src?: string, dest: string }
+interface DeployShape {
+  src?: string,
+  dest: string
+}
 
 interface Spy {
   name: string,
-  location: string,
+  location?: string,
   adaptor?: string
 }
 
 interface SpypkgConfig {
-  projectOutPath: string;
+  location?: string,
+  projectOutPath?: string;
   spies: Array<Spy>;
 }
 
 const configFilename = 'package.json';
 const rootProperty = 'spypkg';
-const builtInSymbol = '*/';
+const builtInSymbol = ':*';
 
 const bashDependencyFileName = 'dependency';
 const cmdDependencyFileName = 'dependency.cmd';
@@ -30,6 +34,8 @@ const configFilePath: string = join(process.cwd(), configFilename);
  * The location to the `out` folder. This is intended to reside in the project root directory.
  */
 let outDirPath: string;
+
+let location: string;
 
 const libBashDependency: string = join(__dirname, bashDependencyFileName);
 function outBashDependency(name: string = bashDependencyFileName): string {
@@ -44,6 +50,15 @@ function outCmdDependency(name: string = cmdDependencyFileName): string {
 const libAdaptor: string = join(__dirname, 'adaptor', adaptorFileName);
 function outAdaptor(name: string = adaptorFileName): string {
   return join(outDirPath, name);
+}
+
+const assignLocation = (spyLocation) => {
+  if (!spyLocation && location) {
+    spyLocation = location;
+  } else if (!spyLocation && !location) {
+    throw new Error("[spypkg] Missing 'location' property for 'spypkg' object. See documentation: https://github.com/marckassay/spypkg");
+  }
+  return spyLocation;
 }
 
 async function asyncForEach<T>(value: Array<T>, callback) {
@@ -72,36 +87,47 @@ async function loadConfiguration() {
  *
  * This is developed to work on POSIX and Windows.
  */
-async function addspies() {
+async function addSpies() {
   let config: SpypkgConfig = await loadConfiguration();
+
   outDirPath = config.projectOutPath;
 
-  await removespies(config);
+  location = config.location;
+
+  await removeSpies(config);
 
   asyncForEach<Spy>((config.spies), async (spy: Spy) => {
-    await addCommandDependency(spy.name, spy.location, spy.adaptor);
+    await addSpy(spy.name, spy.location, spy.adaptor);
   });
 }
 
-async function removespies(config?: SpypkgConfig) {
+async function removeSpies(config?: SpypkgConfig) {
   if (!config) {
     config = await loadConfiguration();
   }
   outDirPath = config.projectOutPath;
 
+  location = config.location;
+
   await asyncForEach<Spy>((config.spies), async (spy: Spy) => {
-    await removeCommmandDependency(spy.name, spy.location);
+    await removeSpy(spy.name, spy.location);
   });
 }
 
 /*
 * Resolve commandDirectoryPath if its in a scriptblock.
 */
-async function checkForScriptBlock(commandDirectoryPath): Promise<string> {
-  if (commandDirectoryPath.startsWith('{') || commandDirectoryPath.endsWith('}')) {
-    return await util.executeScriptBlock(commandDirectoryPath, 'Unable to execute the following scriptblock: ');
-  } else {
+async function checkForScriptBlock(commandDirectoryPath): Promise<string | void> {
+  if (commandDirectoryPath && commandDirectoryPath.search(/(?<={).*(?=})/) > 0) {
+    const scriptBlock = commandDirectoryPath.match(/(?<={).*(?=})/)[0];
+    await util.executeScriptBlock(scriptBlock, 'Unable to execute the following scriptblock: ')
+      .then((value) => {
+        commandDirectoryPath.replace(/[{].*[}]/, value);
+      });
+
     return Promise.resolve(commandDirectoryPath);
+  } else {
+    return Promise.resolve();
   }
 }
 
@@ -114,29 +140,37 @@ of the `location` property of the JSON object. This value must be listed in your
 environment variable.
 * @param {string} adaptor the JS file where the command resolves to. Defaults to `adaptor.js`.
 */
-async function addCommandDependency(name: string, commandDirectoryPath: string, adaptor?: string) {
-  commandDirectoryPath = await checkForScriptBlock(commandDirectoryPath);
+async function addSpy(name: string, commandDirectoryPath: string, adaptor?: string) {
+  const resolvedCommand = await checkForScriptBlock(commandDirectoryPath);
+  const spyLocation = assignLocation(resolvedCommand);
 
+  // adaptor may be undefined, specifiying to use built-in one or defined.
   let adaptorSrc: string;
   if (adaptor === undefined) {
     adaptorSrc = libAdaptor;
-  } else if (adaptor.startsWith(builtInSymbol)) {
+  } else if (name.endsWith(builtInSymbol)) {
+    name = name.split(builtInSymbol)[0];
     adaptorSrc = join(__dirname, 'adaptor', 'built-in', name + '-adaptor.js');
   } else {
     adaptorSrc = join(process.cwd(), adaptor);
   }
 
-  // copy files out of spypkg's dist folder and into the client's "out" folder
-  await util.checkAndCreateACopy(libBashDependency, outBashDependency());
-  await util.checkAndCreateACopy(libCmdDependency, outCmdDependency());
-  await util.checkAndCreateACopy(adaptorSrc, outAdaptor(util.getFullname(adaptorSrc)));
+  let arr: DeployShape[];
+  const bashPath: string = join(spyLocation, name);
+  const batchPath: string = join(spyLocation, name + '.cmd');
 
-  await util.makeFileExecutable(outBashDependency());
+  // copy files out of spypkg's dist folder and into the client's "out" folder if defined
+  if (outDirPath) {
+    await util.checkAndCreateACopy(libBashDependency, outBashDependency());
+    await util.checkAndCreateACopy(libCmdDependency, outCmdDependency());
+    await util.checkAndCreateACopy(adaptorSrc, outAdaptor(util.getFullname(adaptorSrc)));
 
+    await util.makeFileExecutable(outBashDependency());
 
-  const bashPath: string = join(commandDirectoryPath, name);
-  const batchPath: string = join(commandDirectoryPath, (name + '.cmd'));
-  const arr = [{ src: outBashDependency(), dest: bashPath }, { src: outCmdDependency(), dest: batchPath }];
+    arr = [{ src: outBashDependency(), dest: bashPath }, { src: outCmdDependency(), dest: batchPath }];
+  } else {
+    arr = [{ src: libBashDependency, dest: bashPath }, { src: libCmdDependency, dest: batchPath }];
+  }
 
   await asyncForEach<DeployShape>(arr, async (spy: DeployShape) => {
     await util.checkAndCreateACopy(spy.src, spy.dest)
@@ -154,11 +188,12 @@ async function addCommandDependency(name: string, commandDirectoryPath: string, 
   return Promise.resolve();
 }
 
-async function removeCommmandDependency(name: string, commandDirectoryPath: string) {
-  commandDirectoryPath = await checkForScriptBlock(commandDirectoryPath);
+async function removeSpy(name: string, commandDirectoryPath: string) {
+  const resolvedCommand = await checkForScriptBlock(commandDirectoryPath);
+  const spyLocation = assignLocation(resolvedCommand);
 
-  const bashPath: string = join(commandDirectoryPath, name);
-  const batchPath: string = join(commandDirectoryPath, name + '.cmd');
+  const bashPath: string = join(spyLocation, name);
+  const batchPath: string = join(spyLocation, name + '.cmd');
 
   await asyncForEach<DeployShape>([{ dest: bashPath }, { dest: batchPath }], async (spy: DeployShape) => {
 
@@ -209,7 +244,7 @@ for (let j = 0; j < process.argv.length; j++) {
 }
 
 if (removePackages === false) {
-  addspies();
+  addSpies();
 } else {
-  removespies();
+  removeSpies();
 }

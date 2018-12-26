@@ -149,6 +149,12 @@ function checkUsersPermissions(filePath, mode): boolean {
   }
 }
 */
+
+/**
+ * Changes mode for file to '555'. This function is only for applicable for POSIX.
+ *
+ * @param filePath The file to change mode to.
+ */
 export async function makeFileExecutable(filePath): Promise<void> {
   const changeMode = promisify(fs.chmod);
   // octal '555' is expressed as: -r-xr-xr-x
