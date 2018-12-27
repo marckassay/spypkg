@@ -6,6 +6,7 @@
     "allowSyntheticDefaultImports": true,
     "declaration": false,
     "moduleResolution": "node",
+    "resolveJsonModule": true,
     "emitDecoratorMetadata": false,
     "experimentalDecorators": false,
     "noUnusedLocals": true,
@@ -23,6 +24,6 @@
     "lib/utils.ts",
     "lib/index.ts",
     "lib/adaptor/adaptor.ts",
-    "lib/adaptor/built-in/npm-adaptor.ts"
+    "lib/adaptor/npm-adaptor.ts"
   ]
 }

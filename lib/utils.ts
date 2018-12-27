@@ -9,6 +9,7 @@ const readFileAsync2 = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
 const renameFileAsync = promisify(fs.rename);
 
+// tslint:disable-next-line:newspaper-order
 export async function readFileAsync(filePath, err_message): Promise<string | never> {
   try {
     const readFile = promisify(fs.readFile);
@@ -90,10 +91,10 @@ export async function removeFile(filePath: string, err_message: string): Promise
 export async function checkAndCreateACopy(source, destination): Promise<boolean> {
   const copy = promisify(fs.copyFile);
   return await doesFileExistAsync(destination)
-    .then((value: boolean) => {
+    .then(async (value: boolean) => {
       if (!value) {
-        fse.ensureDirSync(path.dirname(destination));
-        copy(source, destination);
+        await fse.ensureDir(path.dirname(destination));
+        await copy(source, destination);
         return true;
       } else {
         return false;
@@ -171,4 +172,45 @@ export async function makeFileExecutable(filePath): Promise<void> {
       process.exit(1006);
       return;
     });
+}
+
+/*
+* Resolve commandDirectoryPath if its in a scriptblock.
+*/
+export async function checkAndResolveScriptBlock(value): Promise<string> {
+  if (value && value.search(/(?<={).*(?=})/) > 0) {
+    const scriptBlock = value.match(/(?<={).*(?=})/)[0];
+    await executeScriptBlock(scriptBlock, 'Unable to execute the following scriptblock: ')
+      .then((value) => {
+        value.replace(/[{].*[}]/, value);
+      });
+  }
+  return Promise.resolve(value);
+}
+
+export async function readJSONProperty<T>(filepath: string, property?: string): Promise<T> {
+  const filename = path.basename(filepath, '.json');
+  try {
+    await doesFileExistAsync(filepath, 'Unable to load ' + filename);
+
+    const configRaw: string = await readFileAsync(filepath, 'Unable to read ' + filename);
+
+    if (property) {
+      return JSON.parse(configRaw)[property];
+    } else {
+      return JSON.parse(configRaw);
+    }
+  } catch (error) {
+    if (property) {
+      throw new Error(`Unable to parse ${property} property ${filename} into a JSON object.`);
+    } else {
+      throw new Error(`Unable to parse ${filename} into a JSON object.`);
+    }
+  }
+}
+
+export async function asyncForEach<T>(value: Array<T>, callback) {
+  for (let index = 0; index < value.length; index++) {
+    await callback(value[index], index, value) as T;
+  }
 }

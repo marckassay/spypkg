@@ -11,13 +11,13 @@ SET $Args=%~n0 %*
 SET $JsonConfig=%$CurrentDir%\package.json
 
 IF NOT EXIST %$JsonConfig% (
-  ECHO 'spypkg' was unable to load 'package.json' in the current directory for '%~n0' command. 
-  ECHO Remove the following file if not needed: %0 
-  
+  ECHO 'spypkg' was unable to load 'package.json' in the current directory for '%~n0' command.
+  ECHO Remove the following file if not needed: %0
+
   ENDLOCAL
   @ECHO ON
 
-  EXIT 1 
+  EXIT 1
 )
 
 :: returns absolute path to projectOutPath directory
@@ -30,29 +30,26 @@ FOR /F "USEBACKQ tokens=2 delims=:," %%G IN (`findstr /r /c:".*projectOutPath.*:
   SET $Outpath=!$Outpath: =!
 )
 
+:: if the optional property is not available, then set it to spypkg's dist folder
 IF "%$Outpath%" == "" (
-  ECHO 'spypkg' was unable to find 'projectOutPath' property in 'package.json' for '%~n0' command. 
-  ECHO Remove the following file if not needed: %0 
-
-  ENDLOCAL
-  @ECHO ON
-
-  EXIT 1 
+  SET $Outpath=node_modules\spypkg\dist\adaptor
 )
 
 IF NOT EXIST %$CurrentDir%\%$Outpath% (
   ECHO 'spypkg' was unable to find '%$Outpath%' directory.
-  ECHO Remove the following file if not needed: %0 
+  ECHO Remove the following file if not needed: %0
 
   ENDLOCAL
   @ECHO ON
 
-  EXIT 1 
+  EXIT 1
 )
 
+:: set AdaptorFullPath to custom name adaptor ([name]-adaptor.js)
 SET $AdaptorFullPath=%$CurrentDir%\%$Outpath%\%~n0-adaptor.js
 SET $AdaptorFullPath=!$AdaptorFullPath:\\=\!
 
+:: ...if custom name adaptor doesn't exist, then set it to 'adaptor.js'
 IF NOT EXIST %$AdaptorFullPath% (
   SET $AdaptorFullPath=%$CurrentDir%\%$Outpath%\adaptor.js
 )
