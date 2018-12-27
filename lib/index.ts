@@ -28,8 +28,9 @@ interface SpypkgConfig {
 }
 
 // switches..
-let verboseEnabled: boolean = false;
-let removePackages: boolean = false;
+let verboseSwitch: boolean = false;
+let removeSwitch: boolean = false;
+let forceSwitch: boolean = false;
 
 const JSONFileName = 'package.json';
 const JSONFilePath: string = join(process.cwd(), JSONFileName);
@@ -92,9 +93,11 @@ async function init() {
   // setting command-line switches
   for (let j = 0; j < process.argv.length; j++) {
     if (process.argv[j] === '--verbose') {
-      verboseEnabled = true;
+      verboseSwitch = true;
     } else if (process.argv[j] === '--remove') {
-      removePackages = true;
+      removeSwitch = true;
+    } else if (process.argv[j] === '--force') {
+      forceSwitch = true;
     }
   }
 
@@ -104,7 +107,10 @@ async function init() {
 
   location = config.location;
 
-  if (removePackages === false) {
+  if (removeSwitch === false) {
+    if (forceSwitch) {
+      await removeSpies(config)
+    }
     addSpies(config);
   } else {
     removeSpies(config);
@@ -122,7 +128,6 @@ async function addSpies(config: SpypkgConfig) {
 }
 
 async function removeSpies(config: SpypkgConfig) {
-  // keep this await since removeSpies may be called directly or by addSpies...
   await util.asyncForEach<Spy | string>((config.spies), async (spy: Spy | string) => {
     if (typeof spy === 'object') {
       await removeSpy(spy.name, spy.location);
@@ -187,7 +192,7 @@ async function addSpy(name: string, commandDirectoryPath?: string, adaptor?: str
   await util.asyncForEach<SpyDeploymentShape>(arr, async (spy: SpyDeploymentShape) => {
     await util.checkAndCreateACopy(spy.src, spy.dest)
       .then((value) => {
-        if (verboseEnabled && value) {
+        if (verboseSwitch && value) {
           console.log(`[spypkg] Added: ${spy.dest}`);
         }
         return;
@@ -205,7 +210,7 @@ async function removeSpy(name: string, commandDirectoryPath?: string) {
 
     let continu: boolean = await util.doesFileExistAsync(spy.dest)
       .then((value: boolean) => {
-        if (!value && verboseEnabled) {
+        if (!value && verboseSwitch) {
           console.log(`[spypkg] File does not exist: ${spy.dest}`);
         }
         return value;
@@ -227,7 +232,7 @@ async function removeSpy(name: string, commandDirectoryPath?: string) {
       }
     }
 
-    if (continu && verboseEnabled) {
+    if (continu && verboseSwitch) {
       console.log(`[spypkg] Removed: ${spy.dest}`);
     }
 
