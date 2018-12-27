@@ -8,15 +8,13 @@ args="$@"
 
 if [ -f $currentdir/package.json ]; then
   outpath=$(node -pe "JSON.parse(process.argv[1]).spypkg.projectOutPath" "$(cat $currentdir/package.json)")
-  
-  if [ "$outpath" = "" ]; then
-    echo "'spypkg' was unable to find 'projectOutPath' property in 'package.json' for '"$filename"' command."
-    echo "Remove the following file if not needed: "$0
-    exit 1
+
+  if [ "$outpath" = "undefined" ]; then
+    outpath=node_modules/spypkg/dist/adaptor
   fi
 
   if [ -d "$currentdir/$outpath" ]; then
-    adaptorfullpath=$(realpath $currentdir/$outpath/$filename-adaptor.js)
+    adaptorfullpath=$currentdir/$outpath/$filename-adaptor.js
   else
     echo "'spypkg' was unable to find '$outpath' directory."
     echo "Remove the following file if not needed: "$0
@@ -24,7 +22,7 @@ if [ -f $currentdir/package.json ]; then
   fi
 
   if [ ! -f "$adaptorfullpath" ]; then
-    adaptorfullpath=$(realpath $currentdir/$outpath/adaptor.js)
+    adaptorfullpath=$currentdir/$outpath/adaptor.js
   fi
 
   echo "[spypkg] Executing: node " "$adaptorfullpath" "$filename $@"

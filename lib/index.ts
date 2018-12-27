@@ -175,9 +175,9 @@ async function addSpy(name: string, commandDirectoryPath?: string, adaptor?: str
     await util.checkAndCreateACopy(distBashDependencyFilePath, outBashDependencyFilePath());
     await util.checkAndCreateACopy(distCmdDependencyFilePath, outCmdDependencyFilePath());
     await util.checkAndCreateACopy(resolvedAdaptorFilePath, outAdaptorFilePath(util.getFullname(resolvedAdaptorFilePath)));
-
-    await util.makeFileExecutable(outBashDependencyFilePath());
   }
+
+  await util.makeFileExecutable(outBashDependencyFilePath());
 
   const arr: SpyDeploymentShape[] = [
     { src: outBashDependencyFilePath(), dest: resolvedScriptLocationFilePath },
