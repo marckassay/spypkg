@@ -12,15 +12,11 @@ That adaptor file is, '[npm-adaptor.ts](https://github.com/marckassay/spypkg/blo
 
 As a result from development for the original objective, spypkg can also be used to have local packages that are installed in the host project's 'node_modules' directory, be executed as if they were installed in a global directory (The actual dependency may be located anywhere for that matter. See 'Configuration' section below for further information). This may be ideal when concurrently developing projects that rely on different versions of a global-installed dependency.
 
-This is accomplished in the same fashion as 'yarn in lieu of npm' objective. That is, a shell file is needed to be placed in one of the system's environment path directories. With this file in place it will read the current working directory (which is node's `process.cwd()`) of the shell process and redirect the executed expression to the relative adaptor file. In turn, the adaptor, if needed, will modify the expression and by default (using [adaptor.ts](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/adaptor.ts)), will execute the dependency in the relative 'node_modules' directory. If a different action is needed, excluding [npm-adaptor.ts](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/built-in/npm-adaptor.ts), one will need to be specified in the configuration.
+This is accomplished in the same fashion as 'yarn in lieu of npm' objective. That is, a shell file is needed to be placed in one of the system's environment path directories. With this file in place it will read the current working directory of the shell process and redirect the executed expression to the relative adaptor file. In turn, the adaptor if needed, will modify the expression and by default (using [adaptor.ts](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/adaptor.ts)), will execute the dependency in the relative 'node_modules' directory. If a different action is needed, excluding [npm-adaptor.ts](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/built-in/npm-adaptor.ts), a custom adaptor will need to be specified in the configuration.
 
 ## Caveats
 
-- When assigning `location` value for a spy in the configuration (See "Setup" section below), verify that the location is indeed in the OS's environment `PATH`. And make sure it's in a position with-in `PATH` that no other sub-path intercepts the one intended. An alternative, is to add a new sub-path at the zero index of `PATH` that will be exclusive for spys.
-
-- Unless a spy is deployed to be executed in one of the OS's environment paths, the dependency needs to be accessible whether directly or symbolically on the file system. If the project is not intended to be published to the package manager registry, these dependencies can be added/installed by a package manager so that it will be listed in the descriptor file and reside in 'node_modules' directory.
-
-- And in an addition to having the dependency in the 'node_modules', initializing a new project with a spy is possible. For instance, cordova and ionic require when creating a new project that the destination directory doesn’t exist. So simply create a directory that will eventually be the actual project directory. Then execute cordova, for an example, to create a project in the sub-directory of the one that you just made. Now move all files and folders that were generated into the one you made and delete the sub-directory cordova created.
+- When assigning `location` value in the configuration (See "Setup" section below), verify that the location is indeed in the OS's environment `PATH`. And make sure it's in a position with-in `PATH` that no other sub-path intercepts the one intended. An alternative, is to add a new sub-path at the zero index of `PATH` that will be exclusive for spies. And for POSIX systems, `hash -r` may need to be executed to clear any previous stored paths.
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/marckassay/spypkg/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/spypkg.svg?style=flat)](https://www.npmjs.com/package/spypkg)
 
@@ -44,21 +40,17 @@ link: [yarnpkg.com/en/package/spypkg](https://yarnpkg.com/en/package/spypkg)
 
 ### 'yarn in lieu of npm' configuration example
 
-For this configuration, add the `spypkg` property to `package.json`, add the location folder (i.e. '.spies'):
+For this configuration, add the `spypkg` property to `package.json` and also add the location folder (i.e. '.spies'). Notice the `:*` is being used to specify to use spypkg's one-off '[adaptor](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/built-in/npm-adaptor.ts)' exclusive to npm:
 
 ```json
- {
+{
   "spypkg": {
-    "projectOutPath": "out",
     "spies": [
-      {
-        "name": "npm",
-        "location": "C:\\Users\\marc\\AppData\\Roaming\\.spies",
-        "adaptor": "*/npm-adaptor.js"
-      }
-    ]
+      "npm:*"
+    ],
+    "location": "/home/marc/.spies"
   }
- }
+}
 ```
 
 Now add script commands as explained in the subsequent note:
@@ -68,23 +60,26 @@ Now add script commands as explained in the subsequent note:
 
 ### 'local-as-global' configuration example
 
-This example is very similar to the 'yarn in lieu of npm' example. The only difference is that the `adaptor` property is absent. When no value is given for `adaptor` a generic adaptor is deployed to the `projectOutPath` which will redirect the execution to the host project's 'node_module' directory. So that means, that the dependency will need to be installed in your 'node_module' directory.
+This example is very similar to the 'yarn in lieu of npm' example. The only difference is that the generic adaptor will redirect the execution to the host project's 'node_module/spypkg/dist' directory.
 
 ```json
 {
- "spypkg": {
-   "projectOutPath": "out",
-   "spies": [
-     {
-       "name": "ionic",
-       "location": "/home/marc/.spies"
-     }
-   ]
- }
+  "spypkg": {
+    "spies": [
+      "cordova"
+    ],
+    "location": "/home/marc/.spies"
+  }
 }
 ```
 
-Now add script commands as explained in the subsequent note:
+ In this scenario, the dependency (cordova) needs to be accessible whether directly or symbolically on the file system. If the project is not intended to be published to the package manager registry, these dependencies can be added/installed by a package manager so that it will be listed in the descriptor file and reside in 'node_modules' directory.
+ 
+ And in an addition to having the dependency in the 'node_modules', initializing a new project with a spy is possible. For instance, cordova and ionic require when creating a new project that the destination directory doesn’t exist. So simply create a directory that will eventually be the actual project directory. Afterwards, for an example, execute cordova to create a project in the sub-directory of the one that you just made. Now move all files and folders that were generated into the one you made and delete the sub-directory cordova created.
+
+ If more control is needed, create a custom adaptor and assign it to the spy object. 
+ 
+ Now add script commands as explained in the subsequent note:
 
 * See "Configuration" section below for more about configuring.
 * See also "Adding and Removing Spies" section below on how to execute.
@@ -93,72 +88,68 @@ Now add script commands as explained in the subsequent note:
 
 ### Configuration
 
-After spypkg is installed, a configuration property `spypkg` is required in the host's project `package.json` file. Its schema below with included descriptions for each property will hopefully address any uncertainties:
+After spypkg is installed, a configuration property `spypkg` is required in the host project's `package.json` file. Below is a configuration progressing from its most simplest form to more complex forms:
+   
 ```json
 {
- "$schema": "http://json-schema.org/draft-07/schema#",
- "properties": {
-   "spypkg": {
-     "description": "Configuration object for 'spypkg'. This object is to be in the package.json file of the host project.",
-     "type": "object",
-     "additionalProperties": false,
-     "required": [
-       "projectOutPath",
-       "spies"
-     ],
-     "properties": {
-       "projectOutPath": {
-         "description": "A relative directory path where 'spypkg' will add adaptors and shell script files. This directory will be created if it doesn't exist when 'add-spies' is executed. See project's website for  'add-spies' command.",
-         "type": "string"
-       },
-       "spies": {
-         "description": "The spies to be deployed. 'spies' are defined to be commands that are to be intercepted.",
-         "type": "array",
-         "uniqueItems": true,
-         "minItems": 1
-       }
-     },
-     "definitions": {
-       "spy": {
-         "description": "The command to be intercepted with the location of where this spy will reside when deployed.",
-         "type": "object",
-         "additionalProperties": false,
-         "required": [
-           "name",
-           "location"
-         ],
-         "properties": {
-           "name": {
-             "description": "The name of the command to intercept.",
-             "type": "string",
-             "examples": ["npm", "cordova", "ionic"]
-           },
-           "location": {
-             "description": "The path of where spypkg will deploy the shell-script files. If the value is surrounded by curly-braces, then it will be evaluated by spypkg",
-             "type": "string",
-             "examples": [
-               "C:\\Users\\marc\\AppData\\Roaming\\.spies",
-               "/home/marc/.spies",
-               "{yarn global dir}"
-             ]
-           },
-           "adaptor": {
-             "description": "The path to the adaptor file that is to be copied to the 'projectOutPath'. A value starting with '*/', specifies to spypkg to look in its 'built-in'(https://github.com/marckassay/spypkg/tree/master/lib/adaptor/built-in) subdirectory.",
-             "type": "string",
-             "examples": [
-               "build/js/adaptor.js",
-               "/dist/ionic-adaptor.js",
-               "*/npm-adaptor.js"
-             ],
-             "default": [
-               "adaptor.js"
-             ]
-           }
-         }
-       }
-     }
-   }
- }
+  "spypkg": {
+    "spies": [
+      "ionic"
+    ],
+    "location": "/home/marc/.spies"
+  }
+}
+```
+   
+```json
+{
+  "spypkg": {
+    "projectOutPath": "out",
+    "spies": [
+      "ionic"
+    ],
+    "location": "C:\\Users\\marc\\AppData\\Roaming\\.spies"
+  }
+}
+```
+   
+```json
+{
+  "spypkg": {
+    "projectOutPath": "out",
+    "spies": [
+      {
+        "name": "ionic",
+        "adaptor": "build/dist/ionic-adaptor.js"
+      },
+      {
+        "name": "cordova",
+        "location": "C:\\Program Files\\nodejs\\bin",
+      },
+    ],
+    "location": "C:\\Users\\marc\\AppData\\Roaming\\.spies"
+  }
+}
+```
+
+```json
+{
+  "spypkg": {
+    "projectOutPath": "out",
+    "spies": [
+      "npm:*"
+      {
+        "name": "ionic",
+        "adaptor": "build/dist/ionic-adaptor.js",
+        "location": "{yarn global dir}"
+      },
+      {
+        "name": "cordova",
+        "location": "C:\\Users\\marc\\AppData\\Roaming\\.spies\\v8",
+      },
+    ],
+    "location": "C:\\Users\\marc\\AppData\\Roaming\\.spies"
+  }
 }
 ```
 
@@ -166,7 +157,7 @@ After spypkg is installed, a configuration property `spypkg` is required in the 
 
 ### Adding and Removing Spies
 
-After installing spypkg, add the following convenience commands to the host project's `package.json`:
+After installing spypkg, add the following convenience alias commands to the host project's `package.json`:
 
 ```json
 {
@@ -177,15 +168,17 @@ After installing spypkg, add the following convenience commands to the host proj
 }
 ```
 
-For POSIX systems, it may be beneficial to clear shell's hash by executing ```hash -r``` after deploying and removal of spies.
+For POSIX systems, by default ```hash -r``` is executed post adding and removing. `--no-hash-reset` switch prevents resetting.
 
-#### `add-spies`
+#### `add-spies [--verbose] [--force] [--no-hash-reset]`
 
-When `add-spies` command is executed, spypkg will load the configuration object from the host project's package.json file. If the `projectOutPath` directory doesn't exist it will be created. It will then iterate the spies array and deploy shell script files to the value specified in the `location` property. These files will be named with the required value of the `name` property. And if an `adaptor` property is given, it will copy it to the `projectOutPath`
+When `add-spies` command is executed, spypkg will load the configuration object from the host project's package.json file.  It will then iterate the spies array and deploy shell script files to the value specified in the `location` property. If the `force` switch present, spypkg will remove all spies listed in the configuration object before deploying.
 
-#### `remove-spies`
+If the optional `projectOutPath` property is declared and directory doesn't exist, it will be created. Otherwise spypkg will redirect execution to its own dist directory. The intention of `projectOutPath` is to give developers more control of files if needed instead of modifying spypkg's dist directory. And if an `adaptor` property is given, it will copy it to the now required `projectOutPath` directory.
 
-When `remove-spies` command is executed, spypkg will load the configuration object and remove only the files that it deployed to the `location` directories.
+#### `remove-spies [--verbose] [--remove] [--no-hash-reset]`
+
+When `remove-spies` command is executed, spypkg will load the configuration object and remove only the declared spies located in `location` directories.
 
 * See "Configuration" section above for more about configuring.
 

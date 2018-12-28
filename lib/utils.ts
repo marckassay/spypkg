@@ -180,9 +180,9 @@ export async function makeFileExecutable(filePath): Promise<void> {
 export async function checkAndResolveScriptBlock(value): Promise<string> {
   if (value && value.search(/(?<={).*(?=})/) > 0) {
     const scriptBlock = value.match(/(?<={).*(?=})/)[0];
-    await executeScriptBlock(scriptBlock, 'Unable to execute the following scriptblock: ')
+    value = await executeScriptBlock(scriptBlock, 'Unable to execute the following scriptblock: ')
       .then((value) => {
-        value.replace(/[{].*[}]/, value);
+        return value.replace(/[{].*[}]/, value);
       });
   }
   return Promise.resolve(value);
