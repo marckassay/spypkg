@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 /**
- * Reads the `package.json` by iterating the packages section of the file to create batch and cmd
- * files. These files are intended to reside in a location listed in the env's PATH so that
- * the CLI, IDE, node and/or any executable will find it "globally".
+ * Loads the package.json in the current working directory to parse the spypkg property. Regardless
+ * of what form this property is in, it must have at least one spy declared in the spies array and
+ * one location with a value to a directory. That directory will be the location the spy is deployed
+ * to. If projectOutPath is declared it will redirect execution to that directory, otherwise spypkg
+ * will redirect to its dist folder.
  *
  * This is developed to work on POSIX and Windows.
  */
@@ -31,6 +33,7 @@ interface SpypkgConfig {
 let verboseSwitch: boolean = false;
 let removeSwitch: boolean = false;
 let forceSwitch: boolean = false;
+let nohashresetSwitch: boolean = false;
 
 const JSONFileName = 'package.json';
 const JSONFilePath: string = join(process.cwd(), JSONFileName);
@@ -40,6 +43,8 @@ const builtInAdaptorSymbol = ':*';
 const bashDependencyFileName = 'dependency';
 const cmdDependencyFileName = 'dependency.cmd';
 const adaptorFileName = 'adaptor.js';
+
+const isWin = process.platform === "win32";
 
 /**
  * The location to the `out` folder. This is intended to reside as a sub-directory of project. This
@@ -76,15 +81,38 @@ function outAdaptorFilePath(name: string = adaptorFileName): string {
   return join(projectOutPath, name);
 }
 
+/**
+ * This will return an extensionless path to the command destination which is valid for the bash file.
+ * To have a valid batch file, simply join the value of '.cmd'.
+ *
+ * @param name the command name, ie, 'cordova', 'npm'.
+ * @param commandDirectoryPath the command destination location value
+ * @returns an extensionless path to the command destination.
+ */
+async function resolveScriptLocationPath(name: string, commandDirectoryPath?: string) {
+  let resolvedCommandDirectoryPath;
+  if (commandDirectoryPath) {
+    resolvedCommandDirectoryPath = await util.checkAndResolveScriptBlock(commandDirectoryPath);
+  }
+
+  if (!resolvedCommandDirectoryPath && location) {
+    resolvedCommandDirectoryPath = location;
+  } else if (!resolvedCommandDirectoryPath && !location) {
+    throw new Error("[spypkg] Missing 'location' property for 'spypkg' object. See documentation: https://github.com/marckassay/spypkg");
+  }
+
+  return join(resolvedCommandDirectoryPath, name.replace(':*', ''));
+}
+
 const resolveAdaptorFilePath = (name: string, adaptor: string | undefined) => {
   let results;
-  if (adaptor === undefined) {
-    results = distAdaptorFilePath;
-  } else if (name.endsWith(builtInAdaptorSymbol)) {
+  if (name.endsWith(builtInAdaptorSymbol)) {
     name = name.split(builtInAdaptorSymbol)[0];
     results = join(__dirname, 'adaptor', name + '-adaptor.js');
+  } else if (adaptor === undefined) {
+    results = distAdaptorFilePath;
   } else {
-    results = join(process.cwd(), 'adaptor', adaptor);
+    results = join(process.cwd(), adaptor);
   }
   return results;
 }
@@ -98,6 +126,8 @@ async function init() {
       removeSwitch = true;
     } else if (process.argv[j] === '--force') {
       forceSwitch = true;
+    } else if (process.argv[j] === '--no-hash-reset') {
+      nohashresetSwitch = true;
     }
   }
 
@@ -111,9 +141,13 @@ async function init() {
     if (forceSwitch) {
       await removeSpies(config)
     }
-    addSpies(config);
+    await addSpies(config);
   } else {
-    removeSpies(config);
+    await removeSpies(config);
+  }
+
+  if (!isWin && !nohashresetSwitch) {
+    await util.executeScriptBlock('{hash -r}', 'Unable to reset hash. Spies may not be called until hash is reset.');
   }
 }
 
@@ -138,29 +172,6 @@ async function removeSpies(config: SpypkgConfig) {
 }
 
 /**
- * This will return an extensionless path to the command destination which is valid for the bash file.
- * To have a valid batch file, simply join the value of '.cmd'.
- *
- * @param name the command name, ie, 'cordova', 'npm'.
- * @param commandDirectoryPath the command destination location value
- * @returns an extensionless path to the command destination.
- */
-async function resolveScriptLocationPath(name: string, commandDirectoryPath?: string) {
-  let resolvedCommandDirectoryPath;
-  if (commandDirectoryPath) {
-    resolvedCommandDirectoryPath = await util.checkAndResolveScriptBlock(commandDirectoryPath);
-  }
-
-  if (!resolvedCommandDirectoryPath && location) {
-    resolvedCommandDirectoryPath = location;
-  } else if (!resolvedCommandDirectoryPath && !location) {
-    throw new Error("[spypkg] Missing 'location' property for 'spypkg' object. See documentation: https://github.com/marckassay/spypkg");
-  }
-
-  return join(resolvedCommandDirectoryPath, name.replace(':*', ''));
-}
-
-/**
 * Creates a dependency from the data parsed in packages property of package.json.
 *
 * @param {string} name the command name that is to be used in shell.
@@ -182,7 +193,9 @@ async function addSpy(name: string, commandDirectoryPath?: string, adaptor?: str
     await util.checkAndCreateACopy(resolvedAdaptorFilePath, outAdaptorFilePath(util.getFullname(resolvedAdaptorFilePath)));
   }
 
-  await util.makeFileExecutable(outBashDependencyFilePath());
+  if (!isWin) {
+    await util.makeFileExecutable(outBashDependencyFilePath());
+  }
 
   const arr: SpyDeploymentShape[] = [
     { src: outBashDependencyFilePath(), dest: resolvedScriptLocationFilePath },

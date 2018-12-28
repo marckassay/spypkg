@@ -20,29 +20,21 @@ The current configuration is in its [`package.json`](https://github.com/marckass
 
 ```json
 {
-  ...
-  "private": true,
-  "scripts": {
-    "add-spies": "node node_modules/spypkg/dist/index.js",
-    "remove-spies": "node node_modules/spypkg/dist/index.js -remove"
-  },
   "spypkg": {
     "projectOutPath": "out",
     "spies": [
+      "npm:*"
       {
         "name": "ionic",
-        "location": "{yarn global bin}"
+        "adaptor": "build/dist/ionic-adaptor.js",
+        "location": "{yarn global dir}"
       },
       {
         "name": "cordova",
-        "location": "{yarn global bin}"
+        "location": "C:\\Users\\marc\\AppData\\Roaming\\.spies\\v8",
       },
-      {
-        "name": "npm",
-        "location": "C:\\Program Files\\nodejs",
-        "adaptor": "*/npm-adaptor.js"
-      }
-    ]
+    ],
+    "location": "C:\\Users\\marc\\AppData\\Roaming\\.spies"
   }
 }
 ```

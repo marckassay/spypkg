@@ -11,21 +11,9 @@
     "remove-spies": "node node_modules/spypkg/dist/index.js --remove --verbose"
   },
   "spypkg": {
-    "projectOutPath": "out",
     "spies": [
-      {
-        "name": "ionic",
-        "location": "{yarn global bin}"
-      },
-      {
-        "name": "cordova",
-        "location": "{yarn global bin}"
-      },
-      {
-        "name": "npm",
-        "location": "{yarn global bin}",
-        "adaptor": "*/npm-adaptor.js"
-      }
-    ]
+      "npm:*"
+    ],
+    "location": "C:\\Users\\marc\\AppData\\Roaming\\.spies"
   }
 }
