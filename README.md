@@ -8,11 +8,11 @@ To address this 'npm in lieu of yarn' issue and to publish a solution for simila
  - Intercept the execution of a shell expression, whether system is POSIX or Windows, and pass this expression to an adaptor file.
  - This adaptor file, compatible to both OS systems, would need to parse and map the npm expression to a yarn expression and then execute.
 
-That adaptor file is, '[npm-adaptor.ts](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/built-in/npm-adaptor.ts)'.
+That adaptor file is, '[npm-adaptor.ts](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/npm-adaptor.ts)'.
 
 As a result from development for the original objective, spypkg can also be used to have local packages that are installed in the host project's 'node_modules' directory, be executed as if they were installed in a global directory (The actual dependency may be located anywhere for that matter. See 'Configuration' section below for further information). This may be ideal when concurrently developing projects that rely on different versions of a global-installed dependency.
 
-This is accomplished in the same fashion as 'yarn in lieu of npm' objective. That is, a shell file is needed to be placed in one of the system's environment path directories. With this file in place it will read the current working directory of the shell process and redirect the executed expression to the relative adaptor file. In turn, the adaptor if needed, will modify the expression and by default (using [adaptor.ts](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/adaptor.ts)), will execute the dependency in the relative 'node_modules' directory. If a different action is needed, excluding [npm-adaptor.ts](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/built-in/npm-adaptor.ts), a custom adaptor will need to be specified in the configuration.
+This is accomplished in the same fashion as 'yarn in lieu of npm' objective. That is, a shell file is needed to be placed in one of the system's environment path directories. With this file in place it will read the current working directory of the shell process and redirect the executed expression to the relative adaptor file. In turn, the adaptor if needed, will modify the expression and by default (using [adaptor.ts](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/adaptor.ts)), will execute the dependency in the relative 'node_modules' directory. If a different action is needed, excluding [npm-adaptor.ts](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/npm-adaptor.ts), a custom adaptor will need to be specified in the configuration.
 
 ## Caveats
 
@@ -40,7 +40,7 @@ link: [yarnpkg.com/en/package/spypkg](https://yarnpkg.com/en/package/spypkg)
 
 ### 'yarn in lieu of npm' configuration example
 
-For this configuration, add the `spypkg` property to `package.json` and also add the location folder (e.g. '.spies'). Notice the `:*` is being used to specify to use spypkg's one-off '[adaptor](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/built-in/npm-adaptor.ts)' exclusive to npm:
+For this configuration, add the `spypkg` property to `package.json` and also add the location folder (e.g. '.spies'). Notice the `:*` is being used to specify to use spypkg's one-off '[npm-adaptor.ts](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/npm-adaptor.ts)' exclusive to npm:
 
 ```json
 {

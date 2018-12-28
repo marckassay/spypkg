@@ -1,6 +1,6 @@
 {
   "name": "spypkg",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "spypkg intercepts shell expressions for modification to be redirected for execution.",
   "repository": "https://github.com/marckassay/spypkg.git",
   "author": "Marc Kassay <marckassay@gmail.com>",
@@ -13,10 +13,12 @@
     "install:harness": "node build/harness/deploy.js"
   },
   "files": [
+    "build",
     "lib",
     "dist",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "tsconfig.json"
   ],
   "devDependencies": {
     "@types/fs-extra": "^5.0.4",
