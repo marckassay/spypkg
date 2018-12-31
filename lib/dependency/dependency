@@ -24,8 +24,8 @@ if [ -f $currentdir/package.json ]; then
   if [ ! -f "$adaptorfullpath" ]; then
     adaptorfullpath=$currentdir/$outpath/adaptor.js
   fi
-
-  echo "[spypkg] Executing: node " "$adaptorfullpath" "$filename $@"
+  # TODO adds this echo back when silent switch is implemented.
+  # echo "[spypkg] Executing: node " "$adaptorfullpath" "$filename $@"
   node "$adaptorfullpath" "$filename $@"
 
   ret=$?

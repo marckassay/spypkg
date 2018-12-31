@@ -34,7 +34,8 @@ function getIsoMorphedExpression(npmex: NPMExpressionShape): string {
   const commmandsEquivalenceTable = {
     'install': 'add',
     'i': 'add',
-    'uninstall': 'remove'
+    'uninstall': 'remove',
+    'view': 'info'
   }
 
   const optionsEquivalenceTable = {
@@ -57,6 +58,7 @@ function getIsoMorphedExpression(npmex: NPMExpressionShape): string {
       value = [value];
     }
     return value.map((val) => {
+      // if the mapped val is undefined, return original val
       const mappedval = table[val];
       return (mappedval !== undefined) ? mappedval : val;
     });

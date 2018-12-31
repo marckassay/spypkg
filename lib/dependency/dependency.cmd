@@ -53,8 +53,8 @@ SET $AdaptorFullPath=!$AdaptorFullPath:\\=\!
 IF NOT EXIST %$AdaptorFullPath% (
   SET $AdaptorFullPath=%$CurrentDir%\%$Outpath%\adaptor.js
 )
-
-ECHO [spypkg] Executing: node %$AdaptorFullPath% %$Args%
+:: TODO adds this echo back when silent switch is implemented.
+:: ECHO [spypkg] Executing: node %$AdaptorFullPath% %$Args%
 node %$AdaptorFullPath% %$Args%
 
 ENDLOCAL
