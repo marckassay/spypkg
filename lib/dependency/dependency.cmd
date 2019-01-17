@@ -32,7 +32,7 @@ FOR /F "USEBACKQ tokens=2 delims=:," %%G IN (`findstr /r /c:".*projectOutPath.*:
 
 :: if the optional property is not available, then set it to spypkg's dist folder
 IF "%$Outpath%" == "" (
-  SET $Outpath=node_modules\spypkg\dist\adaptor
+  SET $Outpath=node_modules\spypkg\dist\lib\adaptor
 )
 
 IF NOT EXIST %$CurrentDir%\%$Outpath% (

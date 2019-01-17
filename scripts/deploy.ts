@@ -7,22 +7,6 @@ const exec = promisify(child.exec);
 const changeMode = promisify(fs.chmod);
 const copy = promisify(fs.copy);
 
-async function makeFileExecutable(filePath): Promise<void> {
-  return changeMode(filePath, '777')
-    .then(() => {
-      return Promise.resolve();
-    }, () => {
-      console.error('[spypkg] Unable to make the following file executable for POSIX environments: ' + filePath);
-      process.exit(1006);
-      return;
-    })
-    .catch(() => {
-      console.error('[spypkg] Unable to make the following file executable for POSIX environments: ' + filePath);
-      process.exit(1006);
-      return;
-    });
-}
-
 async function deploy() {
   try {
     // attempts to find 'yarn.lock' for 'yarn', defaults to 'npm'
@@ -111,3 +95,20 @@ async function deploy() {
   }
 }
 deploy();
+
+
+async function makeFileExecutable(filePath): Promise<void> {
+  return changeMode(filePath, '777')
+    .then(() => {
+      return Promise.resolve();
+    }, () => {
+      console.error('[spypkg] Unable to make the following file executable for POSIX environments: ' + filePath);
+      process.exit(1006);
+      return;
+    })
+    .catch(() => {
+      console.error('[spypkg] Unable to make the following file executable for POSIX environments: ' + filePath);
+      process.exit(1006);
+      return;
+    });
+}

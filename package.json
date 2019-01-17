@@ -1,20 +1,21 @@
 {
   "name": "spypkg",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "description": "spypkg intercepts shell expressions for modification to be redirected for execution.",
   "repository": "https://github.com/marckassay/spypkg.git",
   "author": "Marc Kassay <marckassay@gmail.com>",
   "license": "MIT",
   "private": false,
+  "main": "dist/lib/index.js",
   "scripts": {
-    "prepublishOnly": "npm run build:spypkg",
-    "build:spypkg": "node_modules/.bin/tsc -p tsconfig.json && node build/copy.js",
-    "build:harness": "node_modules/.bin/tsc -p harness/tsconfig.json",
-    "install:harness": "node build/harness/deploy.js"
+    "prepublishOnly": "npm run build",
+    "postinstall": "node dist/scripts/postinstall.js",
+    "build": "node_modules/.bin/tsc -p tsconfig.json && node dist/scripts/copy.js",
+    "install:harness": "node dist/scripts/deploy.js"
   },
   "files": [
-    "build",
     "lib",
+    "scripts",
     "dist",
     "LICENSE",
     "README.md",
