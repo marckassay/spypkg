@@ -63,7 +63,7 @@ function outBashDependencyFilePath(): string {
   if (!projectOutPath) {
     return distBashDependencyFilePath;
   } else {
-    return join(projectOutPath, bashDependencyFileName);
+    return join(projectOutPath, 'dependency', bashDependencyFileName);
   }
 }
 
@@ -72,7 +72,7 @@ function outCmdDependencyFilePath(): string {
   if (!projectOutPath) {
     return distCmdDependencyFilePath;
   } else {
-    return join(projectOutPath, cmdDependencyFileName);
+    return join(projectOutPath, 'dependency', cmdDependencyFileName);
   }
 }
 

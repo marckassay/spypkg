@@ -10,5 +10,5 @@ async function copy(srcpath, dstpath) {
   }
 }
 
-copy('lib/dependency/dependency', 'dist/dependency');
-copy('lib/dependency/dependency.cmd', 'dist/dependency.cmd');
+copy('lib/dependency/dependency', 'dist/lib/dependency/dependency');
+copy('lib/dependency/dependency.cmd', 'dist/lib/dependency/dependency.cmd');
