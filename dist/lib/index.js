@@ -67,7 +67,7 @@ function outBashDependencyFilePath() {
         return distBashDependencyFilePath;
     }
     else {
-        return path_1.join(projectOutPath, bashDependencyFileName);
+        return path_1.join(projectOutPath, 'dependency', bashDependencyFileName);
     }
 }
 var distCmdDependencyFilePath = path_1.join(__dirname, cmdDependencyFileName);
@@ -76,7 +76,7 @@ function outCmdDependencyFilePath() {
         return distCmdDependencyFilePath;
     }
     else {
-        return path_1.join(projectOutPath, cmdDependencyFileName);
+        return path_1.join(projectOutPath, 'dependency', cmdDependencyFileName);
     }
 }
 var distAdaptorFilePath = path_1.join(__dirname, 'adaptor', adaptorFileName);
