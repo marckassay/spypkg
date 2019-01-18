@@ -42,7 +42,7 @@ link: [yarnpkg.com/en/package/spypkg](https://yarnpkg.com/en/package/spypkg)
 
 ### 'yarn in lieu of npm' configuration example
 
-For this configuration, the `spypkg` property (which is stubbed on post install) in `package.json`needs a directory path for its location property (e.g. '.spies'). Notice the `:*` is being used to specify to use spypkg's one-off '[npm-adaptor.ts](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/npm-adaptor.ts)' exclusive to npm:
+For this configuration, the `spypkg` property (which is added as a stub on post install) in `package.json`needs a directory path for its location property (e.g. '.spies'). Notice the `:*` is being used to specify to use spypkg's one-off '[npm-adaptor.ts](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/npm-adaptor.ts)' exclusive to npm:
 
 ```json
 {
@@ -90,7 +90,7 @@ This example is very similar to the 'yarn in lieu of npm' example. The only diff
 
 ### Configuration
 
-After spypkg is installed, a configuration property `spypkg` is required in the host project's `package.json` file. This property is stub on post install. Below is a configuration progressing from its most simplest form to more complex forms:
+After spypkg is installed, a configuration property `spypkg` is required in the host project's `package.json` file. This property is automatically added as a stub on post install. Below is a configuration progressing from its most simplest form to more complex forms:
 
 ```json
 {
@@ -164,8 +164,8 @@ After installing spypkg, the following convenience commands will be added to the
 ```json
 {
   "scripts": {
-    "add-spies": "node ./node_modules/spypkg/dist/index.js --verbose",
-    "remove-spies": "node ./node_modules/spypkg/dist/index.js --remove --verbose"
+    "add-spies": "node ./node_modules/spypkg --verbose",
+    "remove-spies": "node ./node_modules/spypkg --remove --verbose"
   }
 }
 ```

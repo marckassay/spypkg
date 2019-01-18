@@ -1,6 +1,6 @@
 {
   "name": "spypkg",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "spypkg intercepts shell expressions for modification to be redirected for execution.",
   "repository": "https://github.com/marckassay/spypkg.git",
   "author": "Marc Kassay <marckassay@gmail.com>",
