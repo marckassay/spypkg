@@ -5,8 +5,10 @@ spypkg (spy package) is a Node.js package to intercept command-line expressions 
 As of recent in my development, an issue mentioned [here](https://github.com/apache/cordova-cli/issues/303), [here](https://github.com/apache/cordova-fetch/issues/46) and [here](https://github.com/apache/cordova-cli/pull/292) surfaced when a dependency required `npm` instead of host project's package manager, `yarn`. And because of this issue, spypkg has been developed.
 
 To address this 'npm in lieu of yarn' issue and to publish a solution for similar issues, the following objectives needed to be accomplished:
- - Intercept the execution of a shell expression, whether system is POSIX or Windows, and pass this expression to an adaptor file.
- - This adaptor file, compatible to both OS systems, would need to parse and map the npm expression to a yarn expression and then execute.
+
+- Intercept the execution of a shell expression, whether system is POSIX or Windows, and pass this expression to an adaptor file.
+
+- This adaptor file, compatible to both OS systems, would need to parse and map the npm expression to a yarn expression and then execute.
 
 That adaptor file is, '[npm-adaptor.ts](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/npm-adaptor.ts)'.
 
@@ -40,7 +42,7 @@ link: [yarnpkg.com/en/package/spypkg](https://yarnpkg.com/en/package/spypkg)
 
 ### 'yarn in lieu of npm' configuration example
 
-For this configuration, add the `spypkg` property to `package.json` and also add the location folder (e.g. '.spies'). Notice the `:*` is being used to specify to use spypkg's one-off '[npm-adaptor.ts](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/npm-adaptor.ts)' exclusive to npm:
+For this configuration, the `spypkg` property (which is stubbed on post install) in `package.json`needs a directory path for its location property (e.g. '.spies'). Notice the `:*` is being used to specify to use spypkg's one-off '[npm-adaptor.ts](https://github.com/marckassay/spypkg/blob/master/lib/adaptor/npm-adaptor.ts)' exclusive to npm:
 
 ```json
 {
@@ -55,8 +57,8 @@ For this configuration, add the `spypkg` property to `package.json` and also add
 
 Now add script commands as explained in the subsequent note:
 
-* See "Configuration" section below for more about configuring.
-* See also "Adding and Removing Spies" section below on how to execute.
+- See "Configuration" section below for more about configuring.
+- See also "Adding and Removing Spies" section below on how to execute.
 
 ### 'local-as-global' configuration example
 
@@ -77,19 +79,19 @@ This example is very similar to the 'yarn in lieu of npm' example. The only diff
  
  And in an addition to having the dependency in the 'node_modules', initializing a new project with a spy is possible. For instance, cordova and ionic require when creating a new project that the destination directory doesn’t exist. So simply create a directory that will eventually be the actual project directory. Afterwards, for an example, execute cordova to create a project in the sub-directory of the one that you just made. Now move all files and folders that were generated into the one you made and delete the sub-directory cordova created.
 
- If more control is needed, create a custom adaptor and assign it to the spy object. 
- 
+ If more control is needed, create a custom adaptor and assign it to the spy object.
+
  Now add script commands as explained in the subsequent note:
 
-* See "Configuration" section below for more about configuring.
-* See also "Adding and Removing Spies" section below on how to execute.
+- See "Configuration" section below for more about configuring.
+- See also "Adding and Removing Spies" section below on how to execute.
 
 ## Setup
 
 ### Configuration
 
-After spypkg is installed, a configuration property `spypkg` is required in the host project's `package.json` file. Below is a configuration progressing from its most simplest form to more complex forms:
-   
+After spypkg is installed, a configuration property `spypkg` is required in the host project's `package.json` file. This property is stub on post install. Below is a configuration progressing from its most simplest form to more complex forms:
+
 ```json
 {
   "spypkg": {
@@ -100,7 +102,7 @@ After spypkg is installed, a configuration property `spypkg` is required in the 
   }
 }
 ```
-   
+
 ```json
 {
   "spypkg": {
@@ -112,7 +114,7 @@ After spypkg is installed, a configuration property `spypkg` is required in the 
   }
 }
 ```
-   
+
 ```json
 {
   "spypkg": {
@@ -153,11 +155,11 @@ After spypkg is installed, a configuration property `spypkg` is required in the 
 }
 ```
 
-* See also "Adding and Removing Spies" section below on how to execute.
+- See also "Adding and Removing Spies" section below on how to execute.
 
 ### Adding and Removing Spies
 
-After installing spypkg, add the following convenience alias commands to the host project's `package.json`:
+After installing spypkg, the following convenience commands will be added to the host project's `package.json`:
 
 ```json
 {
@@ -180,7 +182,7 @@ If the optional `projectOutPath` property is declared and directory doesn't exis
 
 When `remove-spies` command is executed, spypkg will load the configuration object and remove only the declared spies located in `location` directories.
 
-* See "Configuration" section above for more about configuring.
+- See "Configuration" section above for more about configuring.
 
 ## spypkg-harness
 

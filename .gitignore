@@ -21,7 +21,7 @@ npm-debug.log*
 coverage/
 www/
 out/
-!dist/
+dist/
 tmp/
 temp/
 platforms/

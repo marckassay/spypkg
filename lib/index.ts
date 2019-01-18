@@ -58,7 +58,7 @@ let projectOutPath: string;
  */
 let location: string;
 
-const distBashDependencyFilePath: string = join(__dirname, bashDependencyFileName);
+const distBashDependencyFilePath: string = join(__dirname, 'dependency', bashDependencyFileName);
 function outBashDependencyFilePath(): string {
   if (!projectOutPath) {
     return distBashDependencyFilePath;
@@ -67,7 +67,7 @@ function outBashDependencyFilePath(): string {
   }
 }
 
-const distCmdDependencyFilePath: string = join(__dirname, cmdDependencyFileName);
+const distCmdDependencyFilePath: string = join(__dirname, 'dependency', cmdDependencyFileName);
 function outCmdDependencyFilePath(): string {
   if (!projectOutPath) {
     return distCmdDependencyFilePath;
