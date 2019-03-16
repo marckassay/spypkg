@@ -20,7 +20,7 @@ interface NPMExpressionShape {
 }
 
 /**
- * @external https://regex101.com/r/6PIM2J/6
+ * @external https://regex101.com/library/IwsYRm
  */
 const regex = new RegExp([
   '^(?<exe>npm)?\\ ?',
